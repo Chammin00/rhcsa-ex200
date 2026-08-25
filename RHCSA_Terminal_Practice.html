@@ -143,6 +143,17 @@ body{background:#0d0d0d;color:#f0f0f0;font-family:'Courier New',monospace;font-s
 .mt-sol pre{color:#b9f27c;font-size:10px;white-space:pre-wrap;word-break:break-all;line-height:1.6}
 .mt-ver{display:none;margin-top:6px;background:#05050e;border:1px solid #1a1a3a;border-radius:3px;padding:8px 10px}
 .mt-ver pre{color:#7ec8e3;font-size:10px;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+.tool-cat{color:#e94560;font-size:10px;font-weight:bold;text-transform:uppercase;margin:8px 0 3px;border-bottom:1px solid #1a1a1a;padding-bottom:2px}
+.tool-item{padding:3px 5px;margin-bottom:2px;border-radius:3px;cursor:pointer;border:1px solid transparent}
+.tool-item:hover{background:#1a1a2e;border-color:#0f3460}
+.tool-name{color:#ff9f43;font-size:11px;font-weight:bold;display:inline}
+.tool-desc{color:#555;font-size:9px;display:block;margin-top:1px}
+.tool-detail{display:none;background:#0a0a1a;border:1px solid #1a3a3a;border-radius:4px;margin:4px 0 8px;padding:6px 8px}
+.tool-detail.open{display:block}
+.tool-pattern{padding:2px 5px;margin:2px 0;border-radius:3px;cursor:pointer;border-left:2px solid #0f3460}
+.tool-pattern:hover{background:#16213e;border-left-color:#00d4aa}
+.tp-cmd{color:#7ec8e3;font-size:10px;display:block;font-family:"Courier New",monospace}
+.tp-desc{color:#444;font-size:9px;display:block}
 </style>
 </head>
 <body>
@@ -164,6 +175,7 @@ body{background:#0d0d0d;color:#f0f0f0;font-family:'Courier New',monospace;font-s
       <div class="stab" onclick="showTab('drills')" id="stab-drills">Drills</div>
       <div class="stab" onclick="showTab('practice')" id="stab-practice">Practice</div>
       <div class="stab" onclick="showTab('exam')" id="stab-exam">Tracker</div>
+      <div class="stab" onclick="showTab('tools')" id="stab-tools">Tools</div>
     </div>
     <div id="sidebar-content"></div>
   </div>
@@ -1043,6 +1055,291 @@ var CTXFB={
    ============================================================ */
 var hist=[],histIdx=-1,mode='free',cur=null,drillQ=[],sOK=0,sBAD=0;
 
+/* ============================================================
+   ESSENTIAL TOOLS REFERENCE
+   ============================================================ */
+var TOOLS=[
+  {cat:"File Management",tools:[
+    {name:"find",desc:"Search filesystem",patterns:[
+      {cmd:"find /etc -name '*.conf'",d:"Find by name pattern"},
+      {cmd:"find /var -type f -mtime -3",d:"Modified in last 3 days"},
+      {cmd:"find /usr -type f -size +5M",d:"Files larger than 5MB"},
+      {cmd:"find /home -user alice",d:"Files owned by user"},
+      {cmd:"find / -perm -4000 2>/dev/null",d:"Files with SUID bit"},
+      {cmd:"find /tmp -type f -mtime +7 -delete",d:"Delete files older than 7 days"},
+    ]},
+    {name:"grep",desc:"Search file contents",patterns:[
+      {cmd:"grep 'pattern' /etc/passwd",d:"Search in file"},
+      {cmd:"grep -r 'pattern' /etc/",d:"Recursive search"},
+      {cmd:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'",d:"Show active config (no comments)"},
+      {cmd:"grep -i 'error' /var/log/messages",d:"Case-insensitive search"},
+      {cmd:"grep -n 'PermitRoot' /etc/ssh/sshd_config",d:"Show line numbers"},
+      {cmd:"grep -l 'pattern' /etc/*.conf",d:"List matching files only"},
+    ]},
+    {name:"tar",desc:"Archive and compress",patterns:[
+      {cmd:"tar -czf /tmp/backup.tar.gz /etc/ssh",d:"Create gzip archive"},
+      {cmd:"tar -cjf /tmp/backup.tar.bz2 /var/log",d:"Create bzip2 archive"},
+      {cmd:"tar -tzvf /tmp/backup.tar.gz",d:"List archive contents"},
+      {cmd:"tar -xzvf /tmp/backup.tar.gz -C /restore/",d:"Extract to directory"},
+      {cmd:"tar -czf - /etc | ssh user@host 'cat > /tmp/etc.tar.gz'",d:"Stream archive over SSH"},
+    ]},
+    {name:"cp / mv / rm",desc:"Copy move delete",patterns:[
+      {cmd:"cp -a /src/ /dest/",d:"Archive copy (preserve all)"},
+      {cmd:"cp -p file1 file2",d:"Preserve permissions+timestamps"},
+      {cmd:"cp -r /src/ /dest/",d:"Copy directory recursively"},
+      {cmd:"mv /old/path /new/path",d:"Move or rename"},
+      {cmd:"rm -rf /path/to/dir",d:"Remove directory recursively (careful!)"},
+      {cmd:"rsync -av --delete /src/ /dest/",d:"Sync with delete"},
+    ]},
+    {name:"ln",desc:"Create links",patterns:[
+      {cmd:"ln -s /path/to/target /path/to/link",d:"Create symbolic link"},
+      {cmd:"ln /path/to/source /path/to/hardlink",d:"Create hard link"},
+      {cmd:"ls -la /path/to/link",d:"Verify link target"},
+      {cmd:"readlink -f /path/to/link",d:"Resolve full path of symlink"},
+    ]},
+  ]},
+  {cat:"Text Processing",tools:[
+    {name:"awk",desc:"Column and field processing",patterns:[
+      {cmd:"awk '{print $1}' /etc/passwd",d:"Print first column"},
+      {cmd:"awk -F: '{print $1,$3}' /etc/passwd",d:"Use : delimiter, print cols 1 and 3"},
+      {cmd:"awk -F: '$3>=1000{print $1}' /etc/passwd",d:"Users with UID >= 1000"},
+      {cmd:"awk 'NR>1{print}' file.txt",d:"Skip first line (header)"},
+      {cmd:"df -h | awk 'NR>1{print $5,$6}'",d:"Disk usage percent and mount"},
+      {cmd:"free -m | awk '/^Mem:/{print $3/$2*100}'",d:"Memory usage percent"},
+    ]},
+    {name:"sed",desc:"Stream text editor",patterns:[
+      {cmd:"sed -i 's/old/new/g' file.txt",d:"Replace all occurrences in-place"},
+      {cmd:"sed -n '10,20p' file.txt",d:"Print lines 10 to 20"},
+      {cmd:"sed '/^#/d' /etc/ssh/sshd_config",d:"Delete comment lines"},
+      {cmd:"sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config",d:"Disable root login"},
+      {cmd:"sed -i '/^SELINUX=/c\\SELINUX=enforcing' /etc/selinux/config",d:"Change SELINUX line"},
+    ]},
+    {name:"cut / sort / uniq",desc:"Column and line tools",patterns:[
+      {cmd:"cut -d: -f1,3 /etc/passwd",d:"Cut fields 1 and 3 with : delimiter"},
+      {cmd:"sort -t: -k3 -n /etc/passwd",d:"Sort by 3rd field numerically"},
+      {cmd:"sort file.txt | uniq -c | sort -rn",d:"Count occurrences, sort by frequency"},
+      {cmd:"cut -d: -f7 /etc/passwd | sort | uniq",d:"List unique login shells"},
+    ]},
+    {name:"tr / wc / head / tail",desc:"Misc text tools",patterns:[
+      {cmd:"wc -l /var/log/messages",d:"Count lines in file"},
+      {cmd:"head -20 /var/log/messages",d:"First 20 lines"},
+      {cmd:"tail -f /var/log/messages",d:"Follow log in real time"},
+      {cmd:"tail -100 /var/log/messages | grep error",d:"Last 100 lines, filtered"},
+      {cmd:"tr 'a-z' 'A-Z' < file.txt",d:"Lowercase to uppercase"},
+    ]},
+  ]},
+  {cat:"Process and System",tools:[
+    {name:"ps",desc:"Show running processes",patterns:[
+      {cmd:"ps aux",d:"All processes with user and CPU%"},
+      {cmd:"ps aux --sort=-%cpu | head -10",d:"Top 10 by CPU usage"},
+      {cmd:"ps aux --sort=-%mem | head -10",d:"Top 10 by memory usage"},
+      {cmd:"ps -ef | grep httpd",d:"Find specific process"},
+      {cmd:"pgrep -a httpd",d:"Find process by name with PID"},
+    ]},
+    {name:"top / htop",desc:"Live process monitor",patterns:[
+      {cmd:"top",d:"Interactive process monitor (q to quit)"},
+      {cmd:"top -bn1 | head -20",d:"One-shot snapshot"},
+      {cmd:"top -u alice",d:"Show only alice processes"},
+    ]},
+    {name:"ss / netstat",desc:"Network socket status",patterns:[
+      {cmd:"ss -tlnp",d:"TCP listening ports with process"},
+      {cmd:"ss -ulnp",d:"UDP listening ports"},
+      {cmd:"ss -tlnp | grep :22",d:"Check sshd port"},
+      {cmd:"ss -tlnp | grep :80",d:"Check httpd port"},
+      {cmd:"ss -s",d:"Socket statistics summary"},
+    ]},
+    {name:"systemctl",desc:"Manage services and units",patterns:[
+      {cmd:"systemctl enable --now httpd",d:"Enable AND start immediately"},
+      {cmd:"systemctl disable --now httpd",d:"Disable AND stop"},
+      {cmd:"systemctl restart httpd",d:"Restart service"},
+      {cmd:"systemctl status httpd",d:"Show status"},
+      {cmd:"systemctl is-active httpd",d:"Is running?"},
+      {cmd:"systemctl is-enabled httpd",d:"Starts at boot?"},
+      {cmd:"systemctl --failed",d:"List all failed services"},
+      {cmd:"systemctl daemon-reload",d:"Reload after editing unit files"},
+      {cmd:"systemctl list-units --type=service",d:"List all service units"},
+    ]},
+    {name:"journalctl",desc:"View systemd logs",patterns:[
+      {cmd:"journalctl -u httpd -n 50",d:"Last 50 lines for a service"},
+      {cmd:"journalctl -u httpd -f",d:"Follow service log live"},
+      {cmd:"journalctl -xe",d:"Recent errors with context"},
+      {cmd:"journalctl --since '1 hour ago'",d:"Logs from last hour"},
+      {cmd:"journalctl -b",d:"Logs from current boot"},
+      {cmd:"journalctl -p err -b",d:"Error-level only, this boot"},
+    ]},
+    {name:"free / df / du",desc:"Memory and disk usage",patterns:[
+      {cmd:"free -m",d:"Memory usage in MB"},
+      {cmd:"df -h",d:"Disk usage human-readable"},
+      {cmd:"df -h /mnt/storage",d:"Usage for specific mount"},
+      {cmd:"du -sh /var/log/",d:"Total size of directory"},
+      {cmd:"du -sh /var/log/* | sort -rh | head -10",d:"Top 10 largest in dir"},
+    ]},
+  ]},
+  {cat:"Networking",tools:[
+    {name:"nmcli",desc:"NetworkManager CLI",patterns:[
+      {cmd:"nmcli con show",d:"List all connections"},
+      {cmd:"nmcli device status",d:"Show all network devices"},
+      {cmd:"nmcli con mod ens33 ipv4.method manual ipv4.addresses 192.168.1.10/24",d:"Set static IP"},
+      {cmd:"nmcli con mod ens33 ipv4.gateway 192.168.1.1 ipv4.dns 8.8.8.8",d:"Set gateway and DNS"},
+      {cmd:"nmcli con down ens33 && nmcli con up ens33",d:"Restart connection"},
+      {cmd:"nmcli con add type ethernet con-name eth0 ifname ens33",d:"Add new connection"},
+    ]},
+    {name:"ip",desc:"IP address and routing",patterns:[
+      {cmd:"ip addr show",d:"Show all interfaces and IPs"},
+      {cmd:"ip addr show ens33",d:"Show specific interface"},
+      {cmd:"ip route show",d:"Show routing table"},
+      {cmd:"ip link set ens33 up",d:"Bring interface up"},
+      {cmd:"ping -c 4 192.168.1.1",d:"Test connectivity (4 packets)"},
+    ]},
+    {name:"ssh / scp / sftp",desc:"Remote access and file transfer",patterns:[
+      {cmd:"ssh user@192.168.1.20",d:"Connect to remote host"},
+      {cmd:"ssh -p 2222 user@host",d:"SSH on non-standard port"},
+      {cmd:"ssh-keygen -t rsa -b 4096",d:"Generate RSA key pair"},
+      {cmd:"ssh-copy-id user@192.168.1.20",d:"Deploy public key to remote"},
+      {cmd:"scp file.txt user@host:/tmp/",d:"Copy file to remote"},
+      {cmd:"scp user@host:/tmp/file.txt .",d:"Copy file from remote"},
+      {cmd:"scp -r /dir/ user@host:/dest/",d:"Copy directory to remote"},
+      {cmd:"sftp user@host",d:"Interactive file transfer session"},
+    ]},
+    {name:"firewall-cmd",desc:"Firewall management",patterns:[
+      {cmd:"firewall-cmd --list-all",d:"Show full firewall config"},
+      {cmd:"firewall-cmd --permanent --add-service=http",d:"Allow HTTP permanently"},
+      {cmd:"firewall-cmd --permanent --add-service=https",d:"Allow HTTPS permanently"},
+      {cmd:"firewall-cmd --permanent --add-port=8080/tcp",d:"Open custom port"},
+      {cmd:"firewall-cmd --reload",d:"Apply permanent rules"},
+      {cmd:"firewall-cmd --permanent --remove-service=http",d:"Remove service rule"},
+    ]},
+    {name:"tuned-adm",desc:"Performance tuning profiles",patterns:[
+      {cmd:"tuned-adm list",d:"List all available profiles"},
+      {cmd:"tuned-adm active",d:"Show current active profile"},
+      {cmd:"tuned-adm recommend",d:"Get recommended profile for this system"},
+      {cmd:"tuned-adm profile virtual-guest",d:"Apply VM-optimized profile"},
+      {cmd:"tuned-adm profile throughput-performance",d:"Apply server throughput profile"},
+      {cmd:"tuned-adm profile balanced",d:"Apply default balanced profile"},
+    ]},
+  ]},
+  {cat:"Storage",tools:[
+    {name:"lsblk / fdisk",desc:"Block device management",patterns:[
+      {cmd:"lsblk",d:"List all block devices"},
+      {cmd:"lsblk -f",d:"Show filesystems and UUIDs"},
+      {cmd:"fdisk -l",d:"List partitions on all disks"},
+      {cmd:"fdisk /dev/sdb",d:"Partition disk interactively"},
+      {cmd:"blkid /dev/sdb1",d:"Show UUID and filesystem type"},
+    ]},
+    {name:"LVM",desc:"Logical Volume Management",patterns:[
+      {cmd:"pvcreate /dev/sdb",d:"Create physical volume"},
+      {cmd:"vgcreate vg_data /dev/sdb",d:"Create volume group"},
+      {cmd:"lvcreate -L 2G -n lv_data vg_data",d:"Create 2G logical volume"},
+      {cmd:"mkfs.xfs /dev/vg_data/lv_data",d:"Format with XFS"},
+      {cmd:"lvextend -L +1G /dev/vg_data/lv_data",d:"Extend LV by 1G (online)"},
+      {cmd:"xfs_growfs /mnt/data",d:"Grow XFS to fill new LV space"},
+      {cmd:"pvs && vgs && lvs",d:"Show all PV/VG/LV info"},
+    ]},
+    {name:"mount / fstab",desc:"Mounting filesystems",patterns:[
+      {cmd:"mount /dev/vg_data/lv_data /mnt/data",d:"Mount manually"},
+      {cmd:"mount -a",d:"Mount all fstab entries"},
+      {cmd:"umount /mnt/data",d:"Unmount"},
+      {cmd:"mount | grep xfs",d:"Show mounted XFS filesystems"},
+      {cmd:"echo '/dev/vg_data/lv_data /mnt/data xfs defaults 0 0' >> /etc/fstab",d:"Add persistent fstab entry"},
+    ]},
+  ]},
+  {cat:"Security",tools:[
+    {name:"chmod / chown",desc:"File permissions",patterns:[
+      {cmd:"chmod 755 /path/to/file",d:"rwxr-xr-x"},
+      {cmd:"chmod 644 /path/to/file",d:"rw-r--r--"},
+      {cmd:"chmod 2770 /projects/dev",d:"770 + setgid bit"},
+      {cmd:"chmod 1777 /projects/shared",d:"rwxrwxrwt sticky bit"},
+      {cmd:"chown alice:developers /projects/dev",d:"Set owner and group"},
+      {cmd:"chown -R alice /home/alice/",d:"Change owner recursively"},
+    ]},
+    {name:"SELinux tools",desc:"semanage restorecon audit",patterns:[
+      {cmd:"getenforce",d:"Show SELinux mode"},
+      {cmd:"setenforce 0",d:"Temporarily Permissive"},
+      {cmd:"setenforce 1",d:"Temporarily Enforcing"},
+      {cmd:"ls -lZ /path/",d:"View file SELinux contexts"},
+      {cmd:"semanage fcontext -a -t httpd_sys_content_t \"/web(/.*)?\"",d:"Add permanent context rule"},
+      {cmd:"restorecon -Rv /web/",d:"Apply context rules (always after semanage!)"},
+      {cmd:"setsebool -P httpd_can_network_connect on",d:"Set boolean permanently"},
+      {cmd:"getsebool -a | grep httpd",d:"List httpd booleans"},
+      {cmd:"semanage port -a -t http_port_t -p tcp 8080",d:"Allow HTTP on port 8080"},
+      {cmd:"ausearch -m avc -ts recent | audit2why",d:"Explain recent SELinux denials"},
+    ]},
+    {name:"openssl",desc:"Certificates and crypto",patterns:[
+      {cmd:"openssl genrsa -out server.key 2048",d:"Generate RSA private key"},
+      {cmd:"openssl req -new -key server.key -out server.csr",d:"Create certificate signing request"},
+      {cmd:"openssl req -x509 -days 365 -key server.key -in server.csr -out server.crt",d:"Self-sign certificate"},
+      {cmd:"openssl x509 -in server.crt -text -noout",d:"View certificate details"},
+    ]},
+  ]},
+  {cat:"Scripting",tools:[
+    {name:"bash essentials",desc:"Key scripting constructs",patterns:[
+      {cmd:"#!/bin/bash",d:"Shebang line (first line of every script)"},
+      {cmd:"chmod +x /usr/local/bin/script.sh",d:"Make script executable"},
+      {cmd:"[ -f file ] && echo 'exists'",d:"Test file exists"},
+      {cmd:"[ -d /path ] || { echo 'missing'; exit 1; }",d:"Exit if directory missing"},
+      {cmd:"for i in 1 2 3; do echo $i; done",d:"For loop"},
+      {cmd:"while IFS=, read -r U G P; do echo $U; done < file.csv",d:"Read CSV line by line"},
+      {cmd:"VAR=$(command)",d:"Capture command output"},
+      {cmd:"echo \"$(date '+%Y-%m-%d %H:%M:%S') - msg\" >> /var/log/app.log",d:"Timestamped log entry"},
+    ]},
+    {name:"cron syntax",desc:"Crontab schedule format",patterns:[
+      {cmd:"30 2 * * * /script.sh",d:"Daily at 2:30 AM"},
+      {cmd:"0 3 * * 0 /script.sh",d:"Every Sunday at 3:00 AM"},
+      {cmd:"*/15 * * * * /script.sh",d:"Every 15 minutes"},
+      {cmd:"0 */6 * * * /script.sh",d:"Every 6 hours"},
+      {cmd:"crontab -e",d:"Edit your crontab"},
+      {cmd:"crontab -u alice -e",d:"Edit alice crontab (as root)"},
+      {cmd:"crontab -l",d:"List your crontab"},
+    ]},
+  ]},
+];
+
+function renderToolsSidebar(){
+  var sc=document.getElementById('sidebar-content');
+  sc.innerHTML='';
+  TOOLS.forEach(function(section){
+    var catDiv=document.createElement('div');
+    catDiv.innerHTML='<div class="tool-cat">'+xe(section.cat)+'</div>';
+    section.tools.forEach(function(tool){
+      var tid='tool-'+tool.name.replace(/[^a-z0-9]/gi,'');
+      var wrap=document.createElement('div');
+      wrap.innerHTML=
+        '<div class="tool-item" onclick="toggleTool(\''+tid+'\')">' +
+          '<span class="tool-name">'+xe(tool.name)+'</span>' +
+          ' <span style="color:#555;font-size:9px">- '+xe(tool.desc)+'</span>' +
+        '</div>' +
+        '<div class="tool-detail" id="'+tid+'">' +
+          tool.patterns.map(function(p){
+            return '<div class="tool-pattern" onclick="pasteTool(\''+xe(p.cmd.replace(/'/g,"\\x27")).replace(/\\/g,'\\\\')+'\')">' +
+              '<span class="tp-cmd">$ '+xe(p.cmd)+'</span>' +
+              '<span class="tp-desc">'+xe(p.d)+'</span>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      catDiv.appendChild(wrap);
+    });
+    sc.appendChild(catDiv);
+  });
+}
+
+function toggleTool(id){
+  var el=document.getElementById(id);
+  var open=el.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.tool-detail').forEach(function(d){d.classList.remove('open');});
+  if(!open) el.classList.add('open');
+}
+
+function pasteTool(cmd){
+  // paste into whichever input is active
+  var inp=document.getElementById('pex-input');
+  var free=document.getElementById('cmd-input');
+  if(document.getElementById('panel-practice').style.display!=='none'){
+    inp.value=cmd; inp.focus();
+  } else {
+    free.value=cmd; free.focus();
+  }
+}
 function xe(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function p(txt,cls){var o=document.getElementById('output');var d=document.createElement('div');d.className='ol '+(cls||'c-info');d.textContent=txt;o.appendChild(d);o.scrollTop=o.scrollHeight;}
 function pCmd(cmd){var o=document.getElementById('output');var d=document.createElement('div');d.className='ol';d.innerHTML='<span class="c-prompt">[root@server1 ~]# </span><span class="c-cmd">'+xe(cmd)+'</span>';o.appendChild(d);o.scrollTop=o.scrollHeight;}
@@ -1121,6 +1418,10 @@ function showTab(t){
     });
   } else if(t==='practice'){
     renderPexSidebar();
+  } else if(t==='tools'){
+    tw.style.display=''; ew.classList.remove('visible');
+    renderToolsSidebar();
+    return;
   } else if(t==='exam'){
     // small info blurb in sidebar for tracker
     var info=document.createElement('div');
