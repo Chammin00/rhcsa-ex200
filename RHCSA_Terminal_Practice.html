@@ -1,0 +1,1477 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RHCSA EX200 - Terminal Practice</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0d0d;color:#f0f0f0;font-family:'Courier New',monospace;font-size:14px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+#topbar{background:#1a1a2e;border-bottom:2px solid #e94560;padding:6px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+#topbar h1{color:#e94560;font-size:14px;white-space:nowrap}
+.spacer{flex:1}
+#score-box{background:#0f3460;border-radius:5px;padding:3px 10px;font-size:11px;color:#00d4aa;white-space:nowrap}
+#mode-btns{display:flex;gap:5px}
+.mode-btn{background:#16213e;border:1px solid #0f3460;color:#aaa;padding:3px 9px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit}
+.mode-btn.active{background:#e94560;border-color:#e94560;color:#fff}
+#main{display:flex;flex:1;overflow:hidden}
+/* SIDEBAR */
+#sidebar{width:260px;background:#111;border-right:1px solid #222;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#sidebar-tabs{display:flex;border-bottom:1px solid #222;flex-shrink:0}
+.stab{flex:1;text-align:center;padding:6px 2px;cursor:pointer;font-size:10px;color:#666;border-bottom:2px solid transparent}
+.stab.active{color:#00d4aa;border-bottom-color:#00d4aa}
+#sidebar-content{flex:1;overflow-y:auto;padding:6px}
+#sidebar-content::-webkit-scrollbar{width:6px}
+#sidebar-content::-webkit-scrollbar-track{background:#111}
+#sidebar-content::-webkit-scrollbar-thumb{background:#1a4a6a;border-radius:4px}
+#sidebar-content::-webkit-scrollbar-thumb:hover{background:#00d4aa}
+.cmd-group{margin-bottom:10px}
+.cmd-group-title{color:#e94560;font-size:10px;font-weight:bold;text-transform:uppercase;margin-bottom:4px;border-bottom:1px solid #222;padding-bottom:2px}
+.cmd-item{padding:3px 5px;margin-bottom:2px;border-radius:3px;cursor:pointer;border:1px solid transparent}
+.cmd-item:hover{background:#1a1a2e;border-color:#0f3460}
+.cmd-text{color:#7ec8e3;font-size:10px;display:block}
+.cmd-desc{color:#555;font-size:9px;display:block}
+/* TASK LIST in sidebar */
+.tl-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:4px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;transition:all 0.15s}
+.tl-item:hover{background:#1a1a2e;border-color:#0f3460}
+.tl-item.active-task{background:#0f1a2e;border-color:#7ec8e3}
+.tl-num{width:24px;height:24px;border-radius:50%;background:#16213e;color:#7ec8e3;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tl-num.done{background:#00d4aa;color:#000}
+.tl-num.skip{background:#333;color:#555}
+.tl-info{flex:1;overflow:hidden}
+.tl-title{color:#ccc;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-pts{color:#555;font-size:9px}
+.tl-pts.done{color:#00d4aa}
+/* PANELS */
+#panel-free{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#panel-practice{flex:1;display:none;flex-direction:column;overflow:hidden}
+#panel-mocktracker{flex:1;display:none;flex-direction:column;overflow:hidden;background:#0d0d0d}
+/* DRILL PANEL */
+#drill-panel{display:none;background:#0a0a1a;border-bottom:1px solid #222;padding:8px 14px;flex-shrink:0}
+#drill-panel.visible{display:block}
+#drill-task{color:#ffd700;font-size:12px;margin-bottom:4px}
+#drill-task strong{color:#fff}
+#drill-hint{color:#555;font-size:10px;cursor:pointer;margin-top:3px}
+#drill-feedback{margin-top:5px;font-size:11px;min-height:16px}
+.fb-ok{color:#00d4aa}.fb-bad{color:#e94560}
+#drill-controls{display:flex;gap:7px;margin-top:7px}
+.drill-btn{background:#16213e;border:1px solid #0f3460;color:#aaa;padding:2px 9px;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit}
+.drill-btn:hover{background:#0f3460;color:#fff}
+/* TERMINAL */
+#term-host{background:#1a1a1a;font-size:10px;padding:3px 12px;border-bottom:1px solid #222;display:flex;gap:10px;flex-shrink:0;color:#555}
+#term-host strong{color:#00d4aa}
+#output{flex:1;overflow-y:auto;padding:10px 14px;background:#0d0d0d;line-height:1.55}
+#output::-webkit-scrollbar{width:8px}
+#output::-webkit-scrollbar-track{background:#111}
+#output::-webkit-scrollbar-thumb{background:#1a4a6a;border-radius:4px;border:2px solid #111}
+#output::-webkit-scrollbar-thumb:hover{background:#00d4aa}
+.ol{white-space:pre-wrap;word-break:break-all}
+.c-cmd{color:#7ec8e3}.c-prompt{color:#00d4aa}.c-ok{color:#b9f27c}
+.c-err{color:#e94560}.c-warn{color:#ffd700}.c-info{color:#ccc}
+.c-dim{color:#555}.c-sep{color:#2a2a2a}.c-hi{color:#ff9f43}
+#input-row{display:flex;align-items:center;background:#111;border-top:1px solid #222;padding:6px 14px;flex-shrink:0;gap:7px}
+#prompt-lbl{color:#00d4aa;white-space:nowrap;font-size:13px}
+#cmd-input{flex:1;background:transparent;border:none;outline:none;color:#7ec8e3;font-family:'Courier New',monospace;font-size:13px;caret-color:#00d4aa}
+#clear-btn{background:#1a1a2e;border:1px solid #222;color:#555;padding:2px 7px;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit}
+/* PRACTICE EXAM */
+#pex-header{background:#1a1a2e;border-bottom:2px solid #e94560;padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:16px}
+#pex-task-label{color:#ffd700;font-size:11px;font-weight:bold}
+#pex-task-title{color:#fff;font-size:13px;font-weight:bold}
+#pex-pts{color:#00d4aa;font-size:11px}
+#pex-cat{color:#555;font-size:10px}
+#pex-timer-box{margin-left:auto;display:flex;align-items:center;gap:12px}
+#pex-timer{font-size:20px;color:#ffd700;font-weight:bold;letter-spacing:2px}
+#pex-score{font-size:11px;color:#00d4aa}
+.px-btn{background:#16213e;border:1px solid #0f3460;color:#aaa;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit}
+.px-btn:hover{background:#0f3460;color:#fff}
+.px-btn.green{background:#00d4aa22;border-color:#00d4aa;color:#00d4aa}
+.px-btn.green:hover{background:#00d4aa;color:#000}
+.px-btn.red{background:#e9456022;border-color:#e94560;color:#e94560}
+#pex-task-body{background:#0a0a1a;border-bottom:1px solid #222;flex-shrink:0;overflow:hidden}
+#pex-task-desc-wrap{padding:10px 16px;max-height:200px;overflow-y:auto}
+#pex-task-desc-wrap::-webkit-scrollbar{width:6px}
+#pex-task-desc-wrap::-webkit-scrollbar-track{background:#0a0a1a}
+#pex-task-desc-wrap::-webkit-scrollbar-thumb{background:#1a4a6a;border-radius:4px}
+#pex-task-desc-wrap::-webkit-scrollbar-thumb:hover{background:#00d4aa}
+#pex-desc{color:#ccc;font-size:11px;line-height:1.7;white-space:pre-wrap}
+#pex-task-actions{padding:6px 16px 8px;display:flex;gap:7px;flex-wrap:wrap;border-top:1px solid #161616}
+#pex-solution{display:none;background:#050e05;border-top:1px solid #1a3a1a;padding:8px 16px}
+#pex-solution pre{color:#b9f27c;font-size:10px;line-height:1.6;white-space:pre-wrap;word-break:break-all}
+#pex-verify{display:none;background:#05050e;border-top:1px solid #1a1a3a;padding:8px 16px}
+#pex-verify pre{color:#7ec8e3;font-size:10px;line-height:1.6;white-space:pre-wrap;word-break:break-all}
+.sol-label{color:#333;font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+#pex-terminal{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#pex-prog{background:#111;border-top:1px solid #222;padding:4px 14px;font-size:10px;color:#555;flex-shrink:0;display:flex;gap:16px}
+#pex-prog span{color:#00d4aa}
+/* MOCK TRACKER */
+#mt-header{background:#1a1a2e;border-bottom:2px solid #e94560;padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:14px}
+#mt-header h2{color:#e94560;font-size:13px}
+#mt-timer{font-size:20px;color:#ffd700;font-weight:bold;letter-spacing:2px}
+#mt-info{color:#888;font-size:11px}
+#mt-score{color:#00d4aa;font-size:12px;margin-left:auto}
+.mt-btn{background:#16213e;border:1px solid #0f3460;color:#aaa;padding:4px 11px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit}
+.mt-btn:hover{background:#0f3460;color:#fff}
+.mt-btn.start{background:#00d4aa;border-color:#00d4aa;color:#000;font-weight:bold}
+.mt-btn.rst{background:#e9456033;border-color:#e94560;color:#e94560}
+#mt-body{flex:1;overflow-y:auto;padding:14px 18px}
+#mt-body::-webkit-scrollbar{width:8px}
+#mt-body::-webkit-scrollbar-track{background:#0d0d0d}
+#mt-body::-webkit-scrollbar-thumb{background:#1a4a6a;border-radius:4px;border:2px solid #0d0d0d}
+#mt-body::-webkit-scrollbar-thumb:hover{background:#00d4aa}
+.mt-task{background:#111;border:1px solid #222;border-radius:5px;margin-bottom:12px;overflow:hidden}
+.mt-task.done{border-color:#00d4aa}
+.mt-task.skipped{border-color:#333;opacity:0.6}
+.mt-hdr{display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;user-select:none}
+.mt-hdr:hover{background:#161616}
+.mt-num{width:32px;height:32px;border-radius:50%;background:#16213e;color:#7ec8e3;font-size:11px;font-weight:bold;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mt-num.dn{background:#00d4aa;color:#000}
+.mt-num.sk{background:#333;color:#666}
+.mt-ti{flex:1}
+.mt-ti-title{color:#ffd700;font-size:12px;font-weight:bold}
+.mt-ti-sub{color:#555;font-size:10px}
+.mt-pts{color:#00d4aa;font-size:12px;font-weight:bold;white-space:nowrap}
+.mt-arr{color:#555;font-size:14px;transition:transform 0.2s}
+.mt-arr.op{transform:rotate(90deg)}
+.mt-body{display:none;padding:0 13px 12px;border-top:1px solid #1a1a1a}
+.mt-body.op{display:block}
+.mt-desc{color:#ccc;font-size:11px;line-height:1.65;margin:8px 0;white-space:pre-wrap}
+.mt-acts{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.mt-a{background:#16213e;border:1px solid #0f3460;color:#aaa;padding:3px 10px;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit}
+.mt-a:hover{background:#0f3460;color:#fff}
+.mt-a.dn{background:#00d4aa22;border-color:#00d4aa;color:#00d4aa}
+.mt-a.dn:hover{background:#00d4aa;color:#000}
+.mt-sol{display:none;margin-top:8px;background:#050e05;border:1px solid #1a3a1a;border-radius:3px;padding:8px 10px}
+.mt-sol pre{color:#b9f27c;font-size:10px;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+.mt-ver{display:none;margin-top:6px;background:#05050e;border:1px solid #1a1a3a;border-radius:3px;padding:8px 10px}
+.mt-ver pre{color:#7ec8e3;font-size:10px;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+.tool-cat{color:#e94560;font-size:10px;font-weight:bold;text-transform:uppercase;margin:8px 0 3px;border-bottom:1px solid #1a1a1a;padding-bottom:2px}
+.tool-item{padding:3px 5px;margin-bottom:2px;border-radius:3px;cursor:pointer;border:1px solid transparent}
+.tool-item:hover{background:#1a1a2e;border-color:#0f3460}
+.tool-name{color:#ff9f43;font-size:11px;font-weight:bold;display:inline}
+.tool-desc{color:#555;font-size:9px;display:block;margin-top:1px}
+.tool-detail{display:none;background:#0a0a1a;border:1px solid #1a3a3a;border-radius:4px;margin:4px 0 8px;padding:6px 8px}
+.tool-detail.open{display:block}
+.tool-pattern{padding:2px 5px;margin:2px 0;border-radius:3px;cursor:pointer;border-left:2px solid #0f3460}
+.tool-pattern:hover{background:#16213e;border-left-color:#00d4aa}
+.tp-cmd{color:#7ec8e3;font-size:10px;display:block;font-family:"Courier New",monospace}
+.tp-desc{color:#444;font-size:9px;display:block}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <h1>&#9889; RHCSA EX200 Terminal Practice</h1>
+  <span style="color:#666;font-size:11px">RHEL 9</span>
+  <div class="spacer"></div>
+  <div id="score-box">Drill: <span id="sOK">0</span> correct &nbsp; <span id="sBAD">0</span> wrong</div>
+  <div id="mode-btns">
+    <button class="mode-btn active" onclick="setMode('free')" id="btn-free">Free Type</button>
+    <button class="mode-btn" onclick="setMode('drill')" id="btn-drill">Drill Mode</button>
+  </div>
+</div>
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div id="sidebar-tabs">
+      <div class="stab active" onclick="showTab('cheat')" id="stab-cheat">Cheat</div>
+      <div class="stab" onclick="showTab('drills')" id="stab-drills">Drills</div>
+      <div class="stab" onclick="showTab('practice')" id="stab-practice">Practice</div>
+      <div class="stab" onclick="showTab('exam')" id="stab-exam">Tracker</div>
+      <div class="stab" onclick="showTab('tools')" id="stab-tools">Tools</div>
+    </div>
+    <div id="sidebar-content"></div>
+  </div>
+
+  <!-- FREE TYPE / DRILL PANEL -->
+  <div id="panel-free">
+    <div id="term-host">
+      <span>host:<strong>server1.example.com</strong></span>
+      <span>user:<strong>root</strong></span>
+      <span style="margin-left:auto;font-size:9px">Arrows=history | Tab=complete | Click sidebar=paste</span>
+    </div>
+    <div id="drill-panel">
+      <div id="drill-task">Click <strong>Drill Mode</strong> to start</div>
+      <div id="drill-hint" onclick="showHint()">Show hint</div>
+      <div id="drill-feedback"></div>
+      <div id="drill-controls">
+        <button class="drill-btn" onclick="nextDrill()">Next</button>
+        <button class="drill-btn" onclick="skipDrill()">Skip</button>
+        <button class="drill-btn" onclick="shuffleDrills()">Shuffle</button>
+      </div>
+    </div>
+    <div id="output" onclick="focusInput()"></div>
+    <div id="input-row">
+      <span id="prompt-lbl">[root@server1 ~]# </span>
+      <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" placeholder="type command...">
+      <button id="clear-btn" onclick="clearOutput()">clear</button>
+    </div>
+  </div>
+
+  <!-- PRACTICE EXAM PANEL -->
+  <div id="panel-practice">
+    <div id="pex-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          <span id="pex-task-label">TASK 1 of 18</span>
+          <span id="pex-cat" style="background:#16213e;padding:1px 7px;border-radius:10px;font-size:10px;color:#7ec8e3"></span>
+          <span id="pex-pts" style="font-weight:bold"></span>
+        </div>
+        <div id="pex-task-title" style="color:#fff;font-size:13px;font-weight:bold"></div>
+      </div>
+      <div id="pex-timer-box">
+        <div id="pex-score">Score: <span id="pex-pts-earned">0</span>/300 &nbsp; Done:<span id="pex-done-count">0</span>/18</div>
+        <div id="pex-timer">3:00:00</div>
+        <button class="px-btn green" onclick="pexStart()" id="pex-start-btn">Start Timer</button>
+        <button class="px-btn" onclick="pexPause()" id="pex-pause-btn" style="display:none">Pause</button>
+        <button class="px-btn red" onclick="pexReset()">Reset All</button>
+      </div>
+    </div>
+    <div id="pex-task-body">
+      <div id="pex-task-desc-wrap">
+        <div id="pex-desc"></div>
+      </div>
+      <div id="pex-task-actions">
+        <button class="px-btn green" onclick="pexMarkDone()">&#10003; Mark Complete</button>
+        <button class="px-btn" onclick="pexSkip()">&#8212; Skip Task</button>
+        <button class="px-btn" onclick="pexToggleSol()">&#128273; Solution</button>
+        <button class="px-btn" onclick="pexToggleVerify()">&#128269; Verify Cmds</button>
+        <button class="px-btn" onclick="pexPrev()">&#9664; Prev</button>
+        <button class="px-btn" onclick="pexNext()">Next &#9654;</button>
+      </div>
+      <div id="pex-solution"><div class="sol-label">Solution</div><pre id="pex-sol-text"></pre></div>
+      <div id="pex-verify"><div class="sol-label">Verify</div><pre id="pex-ver-text"></pre></div>
+    </div>
+    <div id="pex-terminal">
+      <div style="background:#1a1a1a;font-size:10px;padding:3px 12px;border-bottom:1px solid #222;color:#555;display:flex;gap:10px;flex-shrink:0">
+        <span>host:<strong style="color:#00d4aa">server1.example.com</strong></span>
+        <span>user:<strong style="color:#00d4aa">root</strong></span>
+        <span style="margin-left:auto;color:#333">Type commands here to practice this task</span>
+      </div>
+      <div id="pex-output" onclick="focusPexInput()" style="flex:1;overflow-y:scroll;padding:10px 14px;background:#0d0d0d;line-height:1.55;scrollbar-width:thin;scrollbar-color:#0f3460 #1a1a1a"></div>
+      <div id="input-row" style="border-top:1px solid #333;padding:6px 14px;background:#0a0a0a;display:flex;gap:7px;align-items:center;flex-shrink:0">
+        <span style="color:#00d4aa;white-space:nowrap;font-size:13px">[root@server1 ~]# </span>
+        <input id="pex-input" type="text" autocomplete="off" spellcheck="false" placeholder="type command for this task..." style="flex:1;background:transparent;border:none;outline:none;color:#7ec8e3;font-family:'Courier New',monospace;font-size:13px;caret-color:#00d4aa">
+        <button onclick="pexClearOutput()" style="background:#1a1a2e;border:1px solid #222;color:#555;padding:2px 7px;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">clear</button>
+      </div>
+    </div>
+    <div id="pex-prog">
+      Tasks: <span id="pex-prog-txt">0 done &nbsp; 0 skipped &nbsp; 18 remaining</span>
+    </div>
+  </div>
+
+  <!-- MOCK TRACKER PANEL -->
+  <div id="panel-mocktracker">
+    <div id="mt-header">
+      <div>
+        <h2>RHCSA EX200 Mock Exam Tracker</h2>
+        <div id="mt-info" style="font-size:10px;margin-top:2px;color:#555">18 tasks | 300 pts | Pass = 210</div>
+      </div>
+      <div id="mt-timer">3:00:00</div>
+      <div id="mt-score">Score: <span id="mt-pts">0</span>/300</div>
+      <button class="mt-btn start" onclick="mtStart()" id="mt-start">Start Timer</button>
+      <button class="mt-btn" onclick="mtPause()" id="mt-pause" style="display:none">Pause</button>
+      <button class="mt-btn rst" onclick="mtReset()">Reset</button>
+    </div>
+    <div id="mt-body"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   EXAM TASKS
+   ============================================================ */
+var EXAM_TASKS=[
+  {num:1,title:"Configure Networking and Hostname",pts:10,time:"5 min",cat:"Networking",
+   desc:"1. Set the system hostname to server1.example.com\n2. Set a static IP 192.168.1.10/24 on the primary interface (ens33)\n3. Default gateway: 192.168.1.1  |  DNS: 8.8.8.8\n4. Confirm connectivity with ping\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["hostnamectl set-hostname server1.example.com","nmcli con mod ens33 ipv4.method manual ipv4.addresses 192.168.1.10/24 ipv4.gateway 192.168.1.1 ipv4.dns 8.8.8.8 connection.autoconnect yes","nmcli con down ens33 && nmcli con up ens33","hostnamectl","ip addr show ens33"],
+   sol:"hostnamectl set-hostname server1.example.com\nnmcli con mod ens33 ipv4.method manual \\\n    ipv4.addresses 192.168.1.10/24 \\\n    ipv4.gateway 192.168.1.1 \\\n    ipv4.dns 8.8.8.8 \\\n    connection.autoconnect yes\nnmcli con down ens33 && nmcli con up ens33",
+   ver:"hostnamectl\nip addr show ens33\nping -c 2 client1.example.com"},
+  {num:2,title:"User and Group Management",pts:15,time:"10 min",cat:"Users",
+   desc:"1. groupadd developers  &&  groupadd sysadmins\n2. Create alice: UID=1501, primary=developers, secondary=sysadmins\n3. Create bob:   UID=1502, primary=developers\n4. Create carol: UID=1503, primary=sysadmins, secondary=developers\n5. Set password RedHat1! for all three (use chpasswd)\n6. Set bob's max password age to 30 days\n7. Lock carol's account (usermod -L)\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["groupadd developers","groupadd sysadmins","useradd -u 1501 -g developers -G sysadmins alice","useradd -u 1502 -g developers bob","useradd -u 1503 -g sysadmins -G developers carol","echo 'alice:RedHat1!' | chpasswd","echo 'bob:RedHat1!' | chpasswd","echo 'carol:RedHat1!' | chpasswd","chage -M 30 bob","usermod -L carol","id alice","chage -l bob"],
+   sol:"groupadd developers\ngroupadd sysadmins\nuseradd -u 1501 -g developers -G sysadmins alice\nuseradd -u 1502 -g developers bob\nuseradd -u 1503 -g sysadmins -G developers carol\necho 'alice:RedHat1!' | chpasswd\necho 'bob:RedHat1!'   | chpasswd\necho 'carol:RedHat1!' | chpasswd\nchage -M 30 bob\nusermod -L carol",
+   ver:"id alice\nid bob\nid carol\nchage -l bob\ngrep carol /etc/shadow | cut -d: -f2"},
+  {num:3,title:"File Permissions and Special Bits",pts:15,time:"10 min",cat:"Permissions",
+   desc:"1. mkdir -p /projects/dev  &&  chown alice:developers /projects/dev\n2. chmod 2770 /projects/dev   (770 + setgid bit)\n3. mkdir -p /projects/shared\n4. chmod 1777 /projects/shared  (rwxrwxrwt sticky bit)\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["mkdir -p /projects/dev","chown alice:developers /projects/dev","chmod 2770 /projects/dev","ls -ld /projects/dev","mkdir -p /projects/shared","chmod 1777 /projects/shared","ls -ld /projects/shared"],
+   sol:"mkdir -p /projects/dev\nchown alice:developers /projects/dev\nchmod 2770 /projects/dev\nmkdir -p /projects/shared\nchmod 1777 /projects/shared",
+   ver:"ls -ld /projects/dev    # drwxrws---\nls -ld /projects/shared # drwxrwxrwt"},
+  {num:4,title:"File Search and Archive",pts:10,time:"8 min",cat:"Files",
+   desc:"1. find /etc -mtime -3 -type f > /tmp/recent_etc.txt\n2. find /usr -type f -size +5M > /tmp/large_usr.txt\n3. tar -czf /tmp/ssh_backup.tar.gz /etc/ssh\n4. tar -tzvf /tmp/ssh_backup.tar.gz  (verify contents)\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["find /etc -mtime -3 -type f > /tmp/recent_etc.txt","find /usr -type f -size +5M > /tmp/large_usr.txt","tar -czf /tmp/ssh_backup.tar.gz /etc/ssh","tar -tzvf /tmp/ssh_backup.tar.gz","ls -lh /tmp/ssh_backup.tar.gz"],
+   sol:"find /etc -mtime -3 -type f > /tmp/recent_etc.txt\nfind /usr -type f -size +5M > /tmp/large_usr.txt\ntar -czf /tmp/ssh_backup.tar.gz /etc/ssh\ntar -tzvf /tmp/ssh_backup.tar.gz",
+   ver:"wc -l /tmp/recent_etc.txt\nwc -l /tmp/large_usr.txt\nls -lh /tmp/ssh_backup.tar.gz"},
+  {num:5,title:"Software Management and Packages",pts:10,time:"8 min",cat:"Packages",
+   desc:"1. dnf group install 'Development Tools' -y\n2. dnf install httpd wget vim -y\n3. systemctl enable httpd  (but do NOT start it)\n4. dnf list installed > /tmp/installed_packages.txt\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf group install 'Development Tools' -y","dnf install httpd wget vim -y","systemctl enable httpd","systemctl is-enabled httpd","systemctl is-active httpd","dnf list installed > /tmp/installed_packages.txt","dnf repolist"],
+   sol:"dnf group install 'Development Tools' -y\ndnf install httpd wget vim -y\nsystemctl enable httpd\n# Do NOT run: systemctl start httpd\ndnf list installed > /tmp/installed_packages.txt",
+   ver:"systemctl is-enabled httpd  # enabled\nsystemctl is-active httpd   # inactive\nwc -l /tmp/installed_packages.txt"},
+  {num:6,title:"Create a Systemd Service Unit",pts:10,time:"8 min",cat:"Systemd",
+   desc:"1. Create /usr/local/bin/cleanup.sh (find /tmp -mtime +7 -delete; log timestamp)\n2. chmod +x /usr/local/bin/cleanup.sh\n3. Create /etc/systemd/system/cleanup.service:\n   [Unit] Description=System Cleanup Service  After=network.target\n   [Service] Type=oneshot  ExecStart=/usr/local/bin/cleanup.sh\n   [Install] WantedBy=multi-user.target\n4. systemctl daemon-reload\n5. systemctl enable cleanup.service\n6. systemctl start cleanup.service\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["chmod +x /usr/local/bin/cleanup.sh","systemctl daemon-reload","systemctl enable cleanup.service","systemctl start cleanup.service","systemctl is-enabled cleanup.service","systemctl status cleanup.service","journalctl -u cleanup.service -n 20"],
+   sol:"# Create script\ncat > /usr/local/bin/cleanup.sh <<'EOF'\n#!/bin/bash\nfind /tmp -type f -mtime +7 -delete 2>/dev/null\necho \"$(date '+%Y-%m-%d %H:%M:%S') - Cleanup complete\" >> /var/log/cleanup.log\nEOF\nchmod +x /usr/local/bin/cleanup.sh\n\n# Create unit file\ncat > /etc/systemd/system/cleanup.service <<'EOF'\n[Unit]\nDescription=System Cleanup Service\nAfter=network.target\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/cleanup.sh\n\n[Install]\nWantedBy=multi-user.target\nEOF\n\nsystemctl daemon-reload\nsystemctl enable cleanup.service\nsystemctl start cleanup.service",
+   ver:"systemctl is-enabled cleanup.service\ncat /var/log/cleanup.log"},
+  {num:7,title:"Cron and At Job Scheduling",pts:10,time:"8 min",cat:"Scheduling",
+   desc:"INSTALL FIRST: dnf install at cronie -y\n\n1. alice cron: run /usr/local/bin/diskcheck.sh every day at 2:30 AM\n   -> crontab -u alice -e  |  add: 30 2 * * * /usr/local/bin/diskcheck.sh\n2. root cron: dnf update -y every Sunday at 3:00 AM\n   -> crontab -e  |  add: 0 3 * * 0 /usr/bin/dnf update -y\n3. at job: write Maintenance complete to /tmp/maint.txt in 5 min\n4. systemctl enable --now crond\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["crontab -u alice -l","crontab -l","dnf install at -y","atq","systemctl enable --now crond","systemctl is-active crond","echo 'echo done > /tmp/maint.txt' | at now + 5 minutes"],
+   sol:"# alice crontab (crontab -u alice -e, then add):\n30 2 * * * /usr/local/bin/diskcheck.sh\n\n# root crontab (crontab -e, then add):\n0 3 * * 0 /usr/bin/dnf update -y\n\n# at job:\necho 'echo \"Maintenance complete\" > /tmp/maint.txt' | at now + 5 minutes\n\nsystemctl enable --now crond",
+   ver:"crontab -u alice -l\ncrontab -l\natq\nsystemctl is-active crond"},
+  {num:8,title:"sudo Configuration",pts:10,time:"5 min",cat:"sudo",
+   desc:"1. All sysadmins members: run ANY command as root, NO password\n   -> /etc/sudoers.d/sysadmins  |  %sysadmins ALL=(ALL) NOPASSWD: ALL\n2. User bob: ONLY /usr/bin/systemctl and /usr/bin/journalctl, WITH password\n   -> /etc/sudoers.d/bob  |  bob ALL=(ALL) /usr/bin/systemctl, /usr/bin/journalctl\n3. chmod 440 on both files\n4. visudo -c to verify\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["visudo -c","cat /etc/sudoers.d/sysadmins","cat /etc/sudoers.d/bob","su - alice -c 'sudo whoami'"],
+   sol:"cat > /etc/sudoers.d/sysadmins <<'EOF'\n%sysadmins ALL=(ALL) NOPASSWD: ALL\nEOF\nchmod 440 /etc/sudoers.d/sysadmins\n\ncat > /etc/sudoers.d/bob <<'EOF'\nbob ALL=(ALL) /usr/bin/systemctl, /usr/bin/journalctl\nEOF\nchmod 440 /etc/sudoers.d/bob\n\nvisudo -c",
+   ver:"visudo -c\nsu - alice -c 'sudo whoami'  # should return: root"},
+  {num:9,title:"LVM - Create, Mount and Extend",pts:20,time:"15 min",cat:"Storage",
+   desc:"INSTALL FIRST: dnf install lvm2 -y\n\n1. pvcreate /dev/sdb\n2. vgcreate vg_data /dev/sdb\n3. lvcreate -L 2G -n lv_storage vg_data\n4. mkfs.xfs /dev/vg_data/lv_storage\n5. echo fstab entry -> mount -a\n6. lvextend -L +1G /dev/vg_data/lv_storage  (online, no unmount)\n7. xfs_growfs /mnt/storage  (grow filesystem to fill new space)\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf install lvm2 -y","pvcreate /dev/sdb","vgcreate vg_data /dev/sdb","lvcreate -L 2G -n lv_storage vg_data","mkfs.xfs /dev/vg_data/lv_storage","mount -a","pvs","vgs","lvs","lvextend -L +1G /dev/vg_data/lv_storage","xfs_growfs /mnt/storage","df -h /mnt/storage"],
+   sol:"pvcreate /dev/sdb\nvgcreate vg_data /dev/sdb\nlvcreate -L 2G -n lv_storage vg_data\nmkfs.xfs /dev/vg_data/lv_storage\nmkdir -p /mnt/storage\necho '/dev/vg_data/lv_storage  /mnt/storage  xfs  defaults  0 0' >> /etc/fstab\nmount -a\nlvextend -L +1G /dev/vg_data/lv_storage\nxfs_growfs /mnt/storage",
+   ver:"pvs && vgs && lvs\ndf -h /mnt/storage\nmount | grep storage"},
+  {num:10,title:"NFS Server Configuration",pts:20,time:"15 min",cat:"NFS",
+   desc:"INSTALL FIRST: dnf install nfs-utils -y\n\n1. dnf install nfs-utils -y\n2. mkdir -p /nfsexports/team  &&  chmod 755 /nfsexports/team\n3. echo 'NFS Share Ready' > /nfsexports/team/welcome.txt\n4. /etc/exports: /nfsexports/team  192.168.1.0/24(rw,sync,root_squash)\n5. systemctl enable --now nfs-server\n6. exportfs -rav\n7. firewall-cmd --permanent --add-service=nfs (+ rpc-bind + mountd)\n8. firewall-cmd --reload\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf install nfs-utils -y","systemctl enable --now nfs-server","exportfs -rav","exportfs -v","showmount -e localhost","firewall-cmd --permanent --add-service=nfs","firewall-cmd --permanent --add-service=rpc-bind","firewall-cmd --permanent --add-service=mountd","firewall-cmd --reload","firewall-cmd --list-services"],
+   sol:"dnf install nfs-utils -y\nmkdir -p /nfsexports/team\nchmod 755 /nfsexports/team\necho 'NFS Share Ready' > /nfsexports/team/welcome.txt\ncat > /etc/exports <<'EOF'\n/nfsexports/team  192.168.1.0/24(rw,sync,root_squash)\nEOF\nsystemctl enable --now nfs-server\nexportfs -rav\nfirewall-cmd --permanent --add-service=nfs\nfirewall-cmd --permanent --add-service=rpc-bind\nfirewall-cmd --permanent --add-service=mountd\nfirewall-cmd --reload",
+   ver:"exportfs -v\nshowmount -e localhost\nsystemctl is-active nfs-server\nfirewall-cmd --list-services"},
+  {num:11,title:"NFS Client with AutoFS",pts:20,time:"15 min",cat:"NFS",
+   desc:"INSTALL FIRST: dnf install autofs nfs-utils -y\n\nOn client1:\n1. dnf install autofs nfs-utils -y\n2. /etc/auto.master: add  /mnt/nfs  /etc/auto.nfs\n3. /etc/auto.nfs: add  team  -rw,sync  192.168.1.10:/nfsexports/team\n4. mkdir -p /mnt/nfs\n5. systemctl enable --now autofs\n6. Test: ls /mnt/nfs/team  &&  cat /mnt/nfs/team/welcome.txt\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf install autofs nfs-utils -y","systemctl enable --now autofs","systemctl is-active autofs","mount | grep nfs","showmount -e 192.168.1.10"],
+   sol:"dnf install autofs nfs-utils -y\necho '/mnt/nfs  /etc/auto.nfs' >> /etc/auto.master\ncat > /etc/auto.nfs <<'EOF'\nteam  -rw,sync  192.168.1.10:/nfsexports/team\nEOF\nmkdir -p /mnt/nfs\nsystemctl enable --now autofs",
+   ver:"systemctl is-active autofs\nls /mnt/nfs/team\nmount | grep nfs\ncat /mnt/nfs/team/welcome.txt"},
+  {num:12,title:"Shell Script - System Health Report",pts:25,time:"20 min",cat:"Scripting",
+   desc:"Write /usr/local/bin/healthreport.sh:\n- Optional $1 directory arg (default /)\n- Outputs: hostname, uptime, memory (MB), disk usage, top 5 CPU procs, failed services\n- Saves to /var/log/healthreport_YYYYMMDD.log\n- Prints 'Report saved to <file>'\n- Exit 0 on success, exit 1 if directory not found\n- chmod +x\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["chmod +x /usr/local/bin/healthreport.sh","/usr/local/bin/healthreport.sh /var","cat /var/log/healthreport_$(date +%Y%m%d).log","systemctl --failed --no-legend","ps aux --sort=-%cpu | head -6","free -m","uptime"],
+   sol:"cat > /usr/local/bin/healthreport.sh <<'EOF'\n#!/bin/bash\nTARGETDIR=\"${1:-/}\"\nLOGDATE=$(date '+%Y%m%d')\nLOGFILE=\"/var/log/healthreport_${LOGDATE}.log\"\n[ ! -d \"$TARGETDIR\" ] && { echo 'ERROR: Not a directory' >&2; exit 1; }\n{\n  echo \"=== HEALTH REPORT ===\"\n  echo \"Host: $(hostname) | $(date)\"\n  uptime\n  free -m | awk '/^Mem:/{printf \"Total:%s Used:%s Free:%s MB\\n\",$2,$3,$4}'\n  df -h \"$TARGETDIR\" | tail -1\n  ps aux --sort=-%cpu | awk 'NR<=6{print $11,$3\"%\"}'\n  systemctl --failed --no-legend\n} > \"$LOGFILE\" 2>&1\necho \"Report saved to $LOGFILE\"\nEOF\nchmod +x /usr/local/bin/healthreport.sh",
+   ver:"/usr/local/bin/healthreport.sh /var\ncat /var/log/healthreport_$(date +%Y%m%d).log\n/usr/local/bin/healthreport.sh /nonexistent; echo \"Exit: $?\""},
+  {num:13,title:"Shell Script - CSV User Provisioning",pts:20,time:"15 min",cat:"Scripting",
+   desc:"Write /usr/local/bin/provision_users.sh:\n- Read CSV ($1): username,group,password\n- For each line: create group if missing, create user if missing,\n  set password, force chage -d 0 (change on first login)\n- Log all actions to /var/log/provision.log with timestamps\n- Skip existing users (log message)\n- Show usage and exit 1 if $1 missing or file not found\n- chmod +x\n\nTest file /tmp/newusers.csv:\ndave,qa,DevPass1!\neve,qa,DevPass1!\nfrank,ops,OpsPass1!\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["chmod +x /usr/local/bin/provision_users.sh","/usr/local/bin/provision_users.sh /tmp/newusers.csv","id dave","id eve","id frank","chage -l dave","cat /var/log/provision.log"],
+   sol:"cat > /usr/local/bin/provision_users.sh <<'EOF'\n#!/bin/bash\nCSV=\"$1\"; LOG=\"/var/log/provision.log\"\nlog(){ echo \"$(date '+%Y-%m-%d %H:%M:%S') - $1\" | tee -a \"$LOG\"; }\n[ -z \"$CSV\" ] && { echo \"Usage: $0 <csv>\"; exit 1; }\n[ ! -f \"$CSV\" ] && { echo \"ERROR: $CSV not found\"; exit 1; }\nwhile IFS=, read -r U G P; do\n  [[ -z \"$U\" || \"$U\" == \\#* ]] && continue\n  getent group \"$G\" &>/dev/null || { groupadd \"$G\"; log \"Group: $G\"; }\n  if id \"$U\" &>/dev/null; then log \"SKIP: $U exists\"; continue; fi\n  useradd -g \"$G\" -m \"$U\"\n  echo \"$U:$P\" | chpasswd\n  chage -d 0 \"$U\"\n  log \"Created: $U group=$G\"\ndone < \"$CSV\"\nEOF\nchmod +x /usr/local/bin/provision_users.sh\nprintf 'dave,qa,DevPass1!\\neve,qa,DevPass1!\\nfrank,ops,OpsPass1!\\n' > /tmp/newusers.csv\n/usr/local/bin/provision_users.sh /tmp/newusers.csv",
+   ver:"id dave && id eve && id frank\nchage -l dave\ncat /var/log/provision.log"},
+  {num:14,title:"Containers - Run and Manage",pts:20,time:"15 min",cat:"Containers",
+   desc:"INSTALL FIRST: dnf install container-tools -y\n\n1. podman pull registry.access.redhat.com/ubi9/ubi-minimal\n2. Run 'reportgen': mount /var/log:ro at /hostlogs, sleep infinity\n3. podman exec reportgen ls /hostlogs  (verify mount)\n4. podman stop reportgen && podman rm reportgen\n5. mkdir -p /srv/webdata && echo '<h1>RHCSA Web</h1>' > /srv/webdata/index.html\n6. Run 'webserver': httpd:latest, port 8888->80,\n   volume /srv/webdata->/usr/local/apache2/htdocs:Z\n7. curl http://localhost:8888\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf install container-tools -y","podman pull registry.access.redhat.com/ubi9/ubi-minimal","podman run -d --name reportgen -v /var/log:/hostlogs:ro,Z registry.access.redhat.com/ubi9/ubi-minimal sleep infinity","podman exec reportgen ls /hostlogs","podman stop reportgen && podman rm reportgen","podman run -d --name webserver -p 8888:80 -v /srv/webdata:/usr/local/apache2/htdocs:Z docker.io/library/httpd:latest","podman ps","podman logs -f webserver"],
+   sol:"podman pull registry.access.redhat.com/ubi9/ubi-minimal\npodman run -d --name reportgen \\\n  -v /var/log:/hostlogs:ro,Z \\\n  registry.access.redhat.com/ubi9/ubi-minimal sleep infinity\npodman exec reportgen ls /hostlogs\npodman stop reportgen && podman rm reportgen\nmkdir -p /srv/webdata\necho '<h1>RHCSA Web</h1>' > /srv/webdata/index.html\npodman run -d --name webserver \\\n  -p 8888:80 \\\n  -v /srv/webdata:/usr/local/apache2/htdocs:Z \\\n  docker.io/library/httpd:latest",
+   ver:"podman ps | grep webserver\ncurl http://localhost:8888"},
+  {num:15,title:"Containers - Build Custom Image",pts:20,time:"20 min",cat:"Containers",
+   desc:"INSTALL FIRST: dnf install container-tools -y\n\n1. mkdir -p /opt/containerbuilds/sysinfo\n2. Create sysinfo.sh: print hostname, kernel version, date\n3. Create Containerfile:\n   FROM registry.access.redhat.com/ubi9/ubi-minimal\n   COPY sysinfo.sh /usr/local/bin/sysinfo.sh\n   RUN chmod +x /usr/local/bin/sysinfo.sh\n   CMD [\"/usr/local/bin/sysinfo.sh\"]\n4. podman build -t sysinfo:1.0 .\n5. podman run --rm sysinfo:1.0\n6. podman tag sysinfo:1.0 sysinfo:latest\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf install container-tools -y","podman build -t sysinfo:1.0 .","podman run --rm sysinfo:1.0","podman tag sysinfo:1.0 sysinfo:latest","podman images | grep sysinfo","podman run --rm sysinfo:latest"],
+   sol:"mkdir -p /opt/containerbuilds/sysinfo\ncd /opt/containerbuilds/sysinfo\ncat > sysinfo.sh <<'EOF'\n#!/bin/bash\necho \"Hostname: $(hostname)\"\necho \"Kernel:   $(uname -r)\"\necho \"Date:     $(date)\"\nEOF\ncat > Containerfile <<'EOF'\nFROM registry.access.redhat.com/ubi9/ubi-minimal\nCOPY sysinfo.sh /usr/local/bin/sysinfo.sh\nRUN chmod +x /usr/local/bin/sysinfo.sh\nCMD [\"/usr/local/bin/sysinfo.sh\"]\nEOF\npodman build -t sysinfo:1.0 .\npodman run --rm sysinfo:1.0\npodman tag sysinfo:1.0 sysinfo:latest",
+   ver:"podman images | grep sysinfo\npodman run --rm sysinfo:latest"},
+  {num:16,title:"Containers - Systemd User Service",pts:20,time:"15 min",cat:"Containers",
+   desc:"INSTALL FIRST: dnf install container-tools -y\n\n1. useradd -m -s /bin/bash devops  &&  set password\n2. As devops: podman pull nginx:alpine\n3. As devops: podman run -d --name nginxsvc -p 9090:80 nginx:alpine\n4. As devops: podman generate systemd --name nginxsvc --files --new\n   Move unit file to ~/.config/systemd/user/\n5. As devops: systemctl --user daemon-reload\n6. As devops: systemctl --user enable --now container-nginxsvc\n7. As root: loginctl enable-linger devops\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf install container-tools -y","loginctl enable-linger devops","loginctl show-user devops | grep Linger","systemctl --user daemon-reload","systemctl --user enable --now container-nginxsvc","podman generate systemd --name nginxsvc --files --new","podman ps"],
+   sol:"useradd -m -s /bin/bash devops\necho 'devops:RedHat1!' | chpasswd\n# As devops:\npodman pull docker.io/library/nginx:alpine\npodman run -d --name nginxsvc -p 9090:80 nginx:alpine\nmkdir -p ~/.config/systemd/user\npodman generate systemd --name nginxsvc --files --new\nmv container-nginxsvc.service ~/.config/systemd/user/\nsystemctl --user daemon-reload\nsystemctl --user enable --now container-nginxsvc\n# As root:\nloginctl enable-linger devops",
+   ver:"loginctl show-user devops | grep Linger\nsu - devops -c 'systemctl --user status container-nginxsvc'\ncurl http://localhost:9090"},
+  {num:17,title:"SELinux - Contexts and Booleans",pts:20,time:"15 min",cat:"SELinux",
+   desc:"INSTALL FIRST: dnf install httpd policycoreutils-python-utils -y\n\nPART A - Custom DocumentRoot:\n  mkdir -p /webapps/portal\n  echo 'SELinux Portal' > /webapps/portal/index.html\n  Set Apache DocumentRoot to /webapps/portal in httpd.conf\n  semanage fcontext -a -t httpd_sys_content_t \"/webapps/portal(/.*)?\"\n  restorecon -Rv /webapps/portal/\n  systemctl enable --now httpd\n  curl http://localhost\n\nPART B - Booleans:\n  setsebool -P httpd_can_network_connect on\n\nPART C - Non-standard port:\n  semanage port -a -t http_port_t -p tcp 8080\n  firewall-cmd --permanent --add-port=8080/tcp && firewall-cmd --reload\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["dnf install httpd -y","dnf install policycoreutils-python-utils -y","semanage fcontext -a -t httpd_sys_content_t \"/webapps/portal(/.*)?\"","restorecon -Rv /webapps/portal/","ls -lZ /webapps/portal/","setsebool -P httpd_can_network_connect on","getsebool httpd_can_network_connect","semanage port -a -t http_port_t -p tcp 8080","semanage port -l | grep http","semanage fcontext -l | grep local","systemctl enable --now httpd"],
+   sol:"mkdir -p /webapps/portal\necho 'SELinux Portal' > /webapps/portal/index.html\n# Edit /etc/httpd/conf/httpd.conf - set DocumentRoot and Directory to /webapps/portal\ndnf install policycoreutils-python-utils -y\nsemanage fcontext -a -t httpd_sys_content_t \"/webapps/portal(/.*)?\"\nrestorecon -Rv /webapps/portal/\nsystemctl enable --now httpd\ncurl http://localhost\nsetsebool -P httpd_can_network_connect on\nsemanage port -a -t http_port_t -p tcp 8080\nfirewall-cmd --permanent --add-port=8080/tcp\nfirewall-cmd --reload",
+   ver:"ls -lZ /webapps/portal/\ncurl http://localhost\ngetsebool httpd_can_network_connect\nsemanage port -l | grep 8080\ncurl http://localhost:8080"},
+  {num:18,title:"SELinux - Audit and Remediation",pts:25,time:"15 min",cat:"SELinux",
+   desc:"INSTALL FIRST: dnf install policycoreutils-python-utils -y\n\n1. mkdir -p /var/log/myapp  &&  touch /var/log/myapp/app.log\n2. mkdir -p /opt/appdata  &&  echo test > /opt/appdata/test.txt\n3. getenforce  (confirm Enforcing)\n4. semanage fcontext -a -t var_log_t \"/var/log/myapp(/.*)?\"\n5. semanage fcontext -a -t httpd_sys_content_t \"/opt/appdata(/.*)?\"\n6. restorecon -Rv /var/log/myapp/  &&  restorecon -Rv /opt/appdata/\n7. semanage port -a -t https_port_t -p tcp 8443\n8. Verify all changes\n9. ausearch -m avc -ts recent  (confirm no new denials)\n\nKEY COMMANDS TO PRACTICE BELOW:",
+   keyc:["getenforce","semanage fcontext -a -t var_log_t \"/var/log/myapp(/.*)?\"","semanage fcontext -a -t httpd_sys_content_t \"/opt/appdata(/.*)?\"","restorecon -Rv /var/log/myapp/","restorecon -Rv /opt/appdata/","ls -ldZ /var/log/myapp/","ls -ldZ /opt/appdata/","semanage port -a -t https_port_t -p tcp 8443","semanage port -l | grep 8443","semanage fcontext -l | grep local","ausearch -m avc -ts recent"],
+   sol:"mkdir -p /var/log/myapp && touch /var/log/myapp/app.log\nmkdir -p /opt/appdata && echo test > /opt/appdata/test.txt\ngetenforce\ndnf install policycoreutils-python-utils -y\nsemanage fcontext -a -t var_log_t \"/var/log/myapp(/.*)?\"\nsemanage fcontext -a -t httpd_sys_content_t \"/opt/appdata(/.*)?\"\nrestorecon -Rv /var/log/myapp/\nrestorecon -Rv /opt/appdata/\nsemanage port -a -t https_port_t -p tcp 8443",
+   ver:"ls -ldZ /var/log/myapp/\nls -ldZ /opt/appdata/\nsemanage port -l | grep 8443\nsemanage fcontext -l | grep local\nausearch -m avc -ts recent"},
+];
+
+/* ============================================================
+   PRACTICE EXAM STATE & LOGIC
+   ============================================================ */
+var pexStatus={};   // num -> 'done'|'skip'
+var pexCurrent=0;   // index into EXAM_TASKS
+var pexTimerID=null, pexSeconds=10800, pexRunning=false, pexStarted=false;
+var pexCmdsTyped={};  // num -> array of commands typed
+
+function pexStart(){
+  pexStarted=true; pexRunning=true;
+  document.getElementById('pex-start-btn').style.display='none';
+  document.getElementById('pex-pause-btn').style.display='inline-block';
+  pexRunTimer();
+  pexLoadTask(0);
+  showTab('practice');
+}
+function pexPause(){
+  if(pexRunning){
+    pexRunning=false; clearInterval(pexTimerID);
+    document.getElementById('pex-pause-btn').textContent='Resume';
+  } else {
+    pexRunning=true; pexRunTimer();
+    document.getElementById('pex-pause-btn').textContent='Pause';
+  }
+}
+function pexReset(){
+  clearInterval(pexTimerID);
+  pexStatus={}; pexCurrent=0; pexSeconds=10800; pexRunning=false; pexStarted=false; pexCmdsTyped={};
+  document.getElementById('pex-timer').textContent='3:00:00';
+  document.getElementById('pex-timer').style.color='#ffd700';
+  document.getElementById('pex-start-btn').style.display='inline-block';
+  document.getElementById('pex-pause-btn').style.display='none';
+  document.getElementById('pex-pause-btn').textContent='Pause';
+  document.getElementById('pex-pts-earned').textContent='0';
+  document.getElementById('pex-done-count').textContent='0';
+  pexLoadTask(0);
+  if(document.getElementById('stab-practice').classList.contains('active')) renderPexSidebar();
+}
+function pexRunTimer(){
+  clearInterval(pexTimerID);
+  pexTimerID=setInterval(function(){
+    if(!pexRunning)return;
+    pexSeconds--;
+    if(pexSeconds<=0){
+      clearInterval(pexTimerID); pexRunning=false;
+      document.getElementById('pex-timer').textContent='TIME UP';
+      document.getElementById('pex-timer').style.color='#e94560';
+      return;
+    }
+    var h=Math.floor(pexSeconds/3600);
+    var m=Math.floor((pexSeconds%3600)/60);
+    var s=pexSeconds%60;
+    document.getElementById('pex-timer').textContent=h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    if(pexSeconds<=900) document.getElementById('pex-timer').style.color='#e94560';
+    else if(pexSeconds<=1800) document.getElementById('pex-timer').style.color='#ff6b35';
+  },1000);
+}
+function pexLoadTask(idx){
+  if(idx<0) idx=0;
+  if(idx>=EXAM_TASKS.length) idx=EXAM_TASKS.length-1;
+  pexCurrent=idx;
+  var t=EXAM_TASKS[idx];
+  document.getElementById('pex-task-label').textContent='TASK '+t.num+' of '+EXAM_TASKS.length;
+  document.getElementById('pex-task-title').textContent=t.title;
+  document.getElementById('pex-pts').textContent=t.pts+' pts | Est: '+t.time;
+  document.getElementById('pex-cat').textContent=t.cat;
+  document.getElementById('pex-desc').textContent=t.desc;
+  document.getElementById('pex-sol-text').textContent=t.sol;
+  document.getElementById('pex-ver-text').textContent=t.ver;
+  document.getElementById('pex-solution').style.display='none';
+  document.getElementById('pex-verify').style.display='none';
+  // Print task header in pex terminal
+  pexPrint('','');
+  pexPrint('=== TASK '+t.num+': '+t.title+' ['+t.pts+' pts] ===','c-warn');
+  pexPrint('Category: '+t.cat+'   |   '+t.time,'c-dim');
+  pexPrint('','');
+  pexPrint('KEY COMMANDS FOR THIS TASK:','c-hi');
+  t.keyc.forEach(function(c){ pexPrint('  $ '+c,'c-ok'); });
+  pexPrint('','');
+  pexPrint('Type any command below to practice. Use Show Solution for full steps.','c-dim');
+  pexPrint('','');
+  if(document.getElementById('stab-practice').classList.contains('active')) renderPexSidebar();
+  document.getElementById('pex-input').focus();
+}
+function pexMarkDone(){
+  var t=EXAM_TASKS[pexCurrent];
+  pexStatus[t.num]='done';
+  pexUpdateScore();
+  renderPexSidebar();
+  pexPrint('','');
+  pexPrint('*** TASK '+t.num+' MARKED COMPLETE! +'+t.pts+' pts ***','c-ok');
+  pexPrint('','');
+  if(pexCurrent<EXAM_TASKS.length-1) setTimeout(function(){pexNext();},1200);
+}
+function pexSkip(){
+  var t=EXAM_TASKS[pexCurrent];
+  pexStatus[t.num]='skip';
+  renderPexSidebar();
+  pexPrint('--- Task '+t.num+' skipped ---','c-dim');
+  if(pexCurrent<EXAM_TASKS.length-1) pexNext();
+}
+function pexNext(){
+  if(pexCurrent<EXAM_TASKS.length-1) pexLoadTask(pexCurrent+1);
+}
+function pexPrev(){
+  if(pexCurrent>0) pexLoadTask(pexCurrent-1);
+}
+function pexToggleSol(){
+  var el=document.getElementById('pex-solution');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function pexToggleVerify(){
+  var el=document.getElementById('pex-verify');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function pexUpdateScore(){
+  var pts=0,done=0;
+  EXAM_TASKS.forEach(function(t){
+    if(pexStatus[t.num]==='done'){pts+=t.pts;done++;}
+  });
+  document.getElementById('pex-pts-earned').textContent=pts;
+  document.getElementById('pex-done-count').textContent=done;
+  var skip=Object.keys(pexStatus).filter(function(k){return pexStatus[k]==='skip';}).length;
+  var rem=EXAM_TASKS.length-done-skip;
+  document.getElementById('pex-prog-txt').textContent=done+' done \u00a0 '+skip+' skipped \u00a0 '+rem+' remaining'+(pts>=210?' \u2014 PASS \u2713':'');
+}
+
+function pexPrint(txt,cls){
+  var o=document.getElementById('pex-output');
+  var d=document.createElement('div');
+  d.className='ol '+(cls||'c-dim');
+  d.textContent=txt;
+  o.appendChild(d);
+  o.scrollTop=o.scrollHeight;
+}
+function pexPrintCmd(cmd){
+  var o=document.getElementById('pex-output');
+  var d=document.createElement('div');
+  d.className='ol';
+  d.innerHTML='<span class="c-prompt">[root@server1 ~]# </span><span class="c-cmd">'+xe(cmd)+'</span>';
+  o.appendChild(d);
+  o.scrollTop=o.scrollHeight;
+}
+function pexClearOutput(){
+  document.getElementById('pex-output').innerHTML='';
+  var t=EXAM_TASKS[pexCurrent];
+  pexPrint('--- Terminal cleared | Task '+t.num+': '+t.title+' ---','c-dim');
+}
+function focusPexInput(){ document.getElementById('pex-input').focus(); }
+
+function pexRunCmd(raw){
+  var cmd=raw.trim(); if(!cmd) return;
+  pexPrintCmd(cmd);
+  if(cmd==='clear'){pexClearOutput();return;}
+  // Track typed commands per task
+  var tnum=EXAM_TASKS[pexCurrent].num;
+  if(!pexCmdsTyped[tnum]) pexCmdsTyped[tnum]=[];
+  pexCmdsTyped[tnum].push(cmd);
+  // Check against key commands for this task
+  var keyc=EXAM_TASKS[pexCurrent].keyc;
+  var isKey=keyc.some(function(k){return cmd===k||cmd.startsWith(k.split(' ')[0]);});
+  // Simulate response
+  var rk=Object.keys(RESP).find(function(k){return cmd===k||cmd.startsWith(k);});
+  if(rk){ pexPrint(RESP[rk][0],RESP[rk][1]); }
+  var ck=Object.keys(CTXFB).find(function(k){return cmd.includes(k);});
+  if(ck){ var t=CTXFB[ck]; pexPrint(t,t.indexOf('Warning')===0?'c-warn':'c-ok'); }
+  else if(!rk){
+    var ok=['mkdir','touch','echo','cat','chmod','chown','cp','mv','rm','mount','umount','nmcli','hostnamectl','find','tar','df','free','uptime','ps','visudo','crontab','at ','ausearch','audit2allow','semodule','sed','awk','grep','curl','ping','ssh','subscription-manager','printf','systemctl','dnf','podman','loginctl'];
+    if(ok.some(function(x){return cmd.startsWith(x);})){
+      pexPrint('(simulated) Command accepted.','c-dim');
+      if(isKey) pexPrint('  \u2713 This is a KEY command for this task!','c-ok');
+      else pexPrint('  OK: Would execute on real RHEL 9.','c-ok');
+    } else {
+      pexPrint('bash: '+cmd.split(' ')[0]+': command not found','c-err');
+    }
+  } else {
+    if(isKey) pexPrint('  \u2713 Key command for this task!','c-ok');
+  }
+  pexPrint('','');
+}
+
+// Practice exam input handler
+var pexHist=[],pexHistIdx=-1;
+document.addEventListener('DOMContentLoaded',function(){
+  var inp=document.getElementById('pex-input');
+  if(inp) inp.addEventListener('keydown',function(ev){
+    if(ev.key==='Enter'){var v=this.value;this.value='';pexHist.unshift(v);pexHistIdx=-1;pexRunCmd(v);}
+    else if(ev.key==='ArrowUp'){ev.preventDefault();if(pexHistIdx<pexHist.length-1){pexHistIdx++;this.value=pexHist[pexHistIdx];}}
+    else if(ev.key==='ArrowDown'){ev.preventDefault();if(pexHistIdx>0){pexHistIdx--;this.value=pexHist[pexHistIdx];}else{pexHistIdx=-1;this.value='';}}
+    else if(ev.key==='l'&&ev.ctrlKey){ev.preventDefault();pexClearOutput();}
+  });
+});
+
+function renderPexSidebar(){
+  var sc=document.getElementById('sidebar-content');
+  sc.innerHTML='';
+  // Start button at top if not started
+  if(!pexStarted){
+    var sb=document.createElement('div');
+    sb.style.cssText='padding:10px 4px';
+    sb.innerHTML='<button onclick="pexStart()" style="width:100%;background:#00d4aa;border:none;color:#000;font-weight:bold;padding:8px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px">&#9654; Start Practice Exam</button>'+
+      '<div style="color:#555;font-size:9px;text-align:center;margin-top:6px">18 tasks | 300 pts | 3 hours</div>';
+    sc.appendChild(sb);
+  }
+  EXAM_TASKS.forEach(function(t){
+    var st=pexStatus[t.num]||'';
+    var el=document.createElement('div');
+    el.className='tl-item'+(pexCurrent===t.num-1?' active-task':'');
+    el.onclick=function(){pexLoadTask(t.num-1);};
+    var nc='tl-num'+(st==='done'?' done':st==='skip'?' skip':'');
+    var nd=st==='done'?'&#10003;':st==='skip'?'&ndash;':t.num;
+    el.innerHTML='<div class="'+nc+'">'+nd+'</div>'+
+      '<div class="tl-info"><div class="tl-title">'+xe(t.title)+'</div>'+
+      '<div class="tl-pts'+(st==='done'?' done':'')+'">'+t.pts+' pts &bull; '+t.cat+'</div></div>';
+    sc.appendChild(el);
+  });
+}
+
+/* ============================================================
+   MOCK TRACKER STATE & LOGIC
+   ============================================================ */
+var mtStatus={}, mtTimerID=null, mtSeconds=10800, mtRunning=false, mtStarted=false;
+function mtStart(){
+  mtStarted=true; mtRunning=true;
+  document.getElementById('mt-start').style.display='none';
+  document.getElementById('mt-pause').style.display='inline-block';
+  mtRenderBody(); mtRunTimer();
+}
+function mtPause(){
+  if(mtRunning){clearInterval(mtTimerID);mtRunning=false;document.getElementById('mt-pause').textContent='Resume';}
+  else{mtRunning=true;mtRunTimer();document.getElementById('mt-pause').textContent='Pause';}
+}
+function mtReset(){
+  clearInterval(mtTimerID);
+  mtStatus={}; mtSeconds=10800; mtRunning=false; mtStarted=false;
+  document.getElementById('mt-timer').textContent='3:00:00';
+  document.getElementById('mt-timer').style.color='#ffd700';
+  document.getElementById('mt-pts').textContent='0';
+  document.getElementById('mt-start').style.display='inline-block';
+  document.getElementById('mt-pause').style.display='none';
+  document.getElementById('mt-pause').textContent='Pause';
+  document.getElementById('mt-info').textContent='18 tasks | 300 pts | Pass = 210';
+  mtRenderBody();
+}
+function mtRunTimer(){
+  clearInterval(mtTimerID);
+  mtTimerID=setInterval(function(){
+    if(!mtRunning)return;
+    mtSeconds--;
+    if(mtSeconds<=0){clearInterval(mtTimerID);mtRunning=false;document.getElementById('mt-timer').textContent='TIME UP';document.getElementById('mt-timer').style.color='#e94560';return;}
+    var h=Math.floor(mtSeconds/3600),m=Math.floor((mtSeconds%3600)/60),s=mtSeconds%60;
+    document.getElementById('mt-timer').textContent=h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    if(mtSeconds<=900) document.getElementById('mt-timer').style.color='#e94560';
+    else if(mtSeconds<=1800) document.getElementById('mt-timer').style.color='#ff6b35';
+  },1000);
+}
+function mtMark(num,st){mtStatus[num]=st;mtRenderBody();mtUpdateScore();if(st)setTimeout(function(){mtToggle(num);},40);}
+function mtToggle(num){
+  var b=document.getElementById('mtb-'+num);var a=document.getElementById('mta-'+num);
+  var op=b.classList.contains('op');
+  document.querySelectorAll('.mt-body').forEach(function(x){x.classList.remove('op');});
+  document.querySelectorAll('.mt-arr').forEach(function(x){x.classList.remove('op');});
+  if(!op){b.classList.add('op');a.classList.add('op');}
+}
+function mtTogSol(num){var el=document.getElementById('mtsol-'+num);el.style.display=el.style.display==='none'?'block':'none';}
+function mtTogVer(num){var el=document.getElementById('mtver-'+num);el.style.display=el.style.display==='none'?'block':'none';}
+function mtUpdateScore(){
+  var pts=0,done=0;
+  EXAM_TASKS.forEach(function(t){if(mtStatus[t.num]==='done'){pts+=t.pts;done++;}});
+  document.getElementById('mt-pts').textContent=pts;
+  var skip=Object.keys(mtStatus).filter(function(k){return mtStatus[k]==='skip';}).length;
+  document.getElementById('mt-info').textContent='Done: '+done+'/18 | Score: '+pts+'/300'+(pts>=210?' | \u2713 PASS':'');
+}
+function mtRenderBody(){
+  var body=document.getElementById('mt-body');
+  if(!mtStarted){
+    body.innerHTML='<div style="text-align:center;padding:48px 20px;color:#555">'+
+      '<div style="font-size:44px;margin-bottom:14px">&#128336;</div>'+
+      '<div style="font-size:15px;color:#888;margin-bottom:8px">Click <span style="color:#00d4aa;font-weight:bold">Start Timer</span> to begin</div>'+
+      '<div style="font-size:11px">Complete tasks on your RHEL 9 VM, mark them done here</div>'+
+      '</div>';
+    return;
+  }
+  body.innerHTML='';
+  EXAM_TASKS.forEach(function(t){
+    var st=mtStatus[t.num]||'';
+    var card=document.createElement('div');
+    card.className='mt-task'+(st==='done'?' done':st==='skip'?' skipped':'');
+    var nd=st==='done'?'&#10003;':st==='skip'?'&ndash;':t.num;
+    var nc='mt-num'+(st==='done'?' dn':st==='skip'?' sk':'');
+    card.innerHTML=
+      '<div class="mt-hdr" onclick="mtToggle('+t.num+')">'+
+        '<div class="'+nc+'">'+nd+'</div>'+
+        '<div class="mt-ti"><div class="mt-ti-title">T'+t.num+' &ndash; '+xe(t.title)+'</div>'+
+        '<div class="mt-ti-sub">['+xe(t.cat)+'] &bull; '+t.time+'</div></div>'+
+        '<div class="mt-pts">'+t.pts+'pt</div>'+
+        '<div class="mt-arr" id="mta-'+t.num+'">&#9654;</div>'+
+      '</div>'+
+      '<div class="mt-body" id="mtb-'+t.num+'">'+
+        '<div class="mt-desc">'+xe(t.desc)+'</div>'+
+        '<div class="mt-acts">'+
+          '<button class="mt-a dn" onclick="mtMark('+t.num+',\'done\')">&#10003; Done</button>'+
+          '<button class="mt-a" onclick="mtMark('+t.num+',\'skip\')">&mdash; Skip</button>'+
+          '<button class="mt-a" onclick="mtTogSol('+t.num+')">Solution</button>'+
+          '<button class="mt-a" onclick="mtTogVer('+t.num+')">Verify</button>'+
+          '<button class="mt-a" onclick="mtMark('+t.num+',\'\')">Reset</button>'+
+        '</div>'+
+        '<div class="mt-sol" id="mtsol-'+t.num+'" style="display:none"><div class="sol-label">Solution</div><pre>'+xe(t.sol)+'</pre></div>'+
+        '<div class="mt-ver" id="mtver-'+t.num+'" style="display:none"><div class="sol-label">Verify</div><pre>'+xe(t.ver)+'</pre></div>'+
+      '</div>';
+    body.appendChild(card);
+  });
+}
+
+/* ============================================================
+   CHEAT SHEET DATA
+   ============================================================ */
+var CHEAT=[
+  {g:"Required Installs Per Topic",c:[
+    {cmd:"dnf install nfs-utils -y",d:"Task 10: NFS Server"},
+    {cmd:"dnf install autofs nfs-utils -y",d:"Task 11: NFS Client + AutoFS"},
+    {cmd:"dnf install at cronie -y",d:"Task 7: at + cron scheduling"},
+    {cmd:"dnf install lvm2 -y",d:"Task 9: LVM storage"},
+    {cmd:"dnf install container-tools -y",d:"Tasks 14-16: Podman containers"},
+    {cmd:"dnf install httpd -y",d:"Task 17: Apache web server"},
+    {cmd:"dnf install policycoreutils-python-utils -y",d:"Tasks 17-18: semanage command"},
+    {cmd:"dnf install httpd policycoreutils-python-utils -y",d:"Task 17: Both at once"},
+    {cmd:"dnf group install 'Development Tools' -y",d:"Task 5: Dev tools group"},
+    {cmd:"dnf install wget vim -y",d:"Task 5: Utilities"},
+    {cmd:"dnf repolist",d:"Verify repos are configured"},
+    {cmd:"dnf list installed | grep <pkg>",d:"Check if package is installed"},
+  ]},
+  {g:"Users & Groups",c:[
+    {cmd:"useradd -u 1501 -g developers -G sysadmins alice",d:"Create user: UID, primary+secondary"},
+    {cmd:"usermod -aG sysadmins alice",d:"Add to group (keep existing)"},
+    {cmd:"usermod -L carol",d:"Lock user account"},
+    {cmd:"usermod -U carol",d:"Unlock user account"},
+    {cmd:"echo 'alice:RedHat1!' | chpasswd",d:"Set password non-interactively"},
+    {cmd:"chage -M 30 bob",d:"Max password age 30 days"},
+    {cmd:"chage -d 0 alice",d:"Force change on next login"},
+    {cmd:"chage -l bob",d:"List password aging info"},
+    {cmd:"groupadd developers",d:"Create a new group"},
+    {cmd:"id alice",d:"Show UID GID and groups"},
+  ]},
+  {g:"Permissions",c:[
+    {cmd:"chmod 2770 /projects/dev",d:"770 + setgid bit"},
+    {cmd:"chmod 1777 /projects/shared",d:"rwxrwxrwt sticky bit"},
+    {cmd:"chmod g+s /dir",d:"Set setgid"},
+    {cmd:"chmod +t /dir",d:"Add sticky bit"},
+    {cmd:"chown alice:developers /projects/dev",d:"Set owner:group"},
+    {cmd:"ls -ld /projects/dev",d:"Check special bits (s/t)"},
+  ]},
+  {g:"NFS Server",c:[
+    {cmd:"dnf install nfs-utils -y",d:"Install NFS"},
+    {cmd:"systemctl enable --now nfs-server",d:"Enable and start"},
+    {cmd:"exportfs -rav",d:"Apply /etc/exports"},
+    {cmd:"exportfs -v",d:"List active exports"},
+    {cmd:"showmount -e localhost",d:"Show exports"},
+    {cmd:"firewall-cmd --permanent --add-service=nfs",d:"Firewall: allow nfs"},
+    {cmd:"firewall-cmd --permanent --add-service=rpc-bind",d:"Firewall: allow rpc-bind"},
+    {cmd:"firewall-cmd --permanent --add-service=mountd",d:"Firewall: allow mountd"},
+    {cmd:"firewall-cmd --reload",d:"Apply firewall rules"},
+  ]},
+  {g:"NFS Client / AutoFS",c:[
+    {cmd:"dnf install autofs nfs-utils -y",d:"Install autofs"},
+    {cmd:"systemctl enable --now autofs",d:"Enable and start autofs"},
+    {cmd:"mount -t nfs 192.168.1.10:/exports /mnt",d:"Manual mount"},
+    {cmd:"mount -a",d:"Mount all fstab entries"},
+  ]},
+  {g:"SELinux Mode",c:[
+    {cmd:"getenforce",d:"Show current mode"},
+    {cmd:"setenforce 0",d:"Temporarily Permissive"},
+    {cmd:"setenforce 1",d:"Temporarily Enforcing"},
+    {cmd:"sestatus",d:"Detailed status"},
+  ]},
+  {g:"SELinux Contexts",c:[
+    {cmd:"ls -lZ /var/www/html/",d:"View file contexts"},
+    {cmd:'semanage fcontext -a -t httpd_sys_content_t "/webdata(/.*)?"',d:"Add PERMANENT rule"},
+    {cmd:'semanage fcontext -m -t httpd_sys_content_t "/webdata(/.*)?"',d:"Modify existing rule"},
+    {cmd:"semanage fcontext -l | grep local",d:"List custom rules"},
+    {cmd:"restorecon -Rv /webdata/",d:"Apply rules (ALWAYS run after semanage!)"},
+    {cmd:"dnf install policycoreutils-python-utils -y",d:"Install semanage"},
+  ]},
+  {g:"SELinux Booleans",c:[
+    {cmd:"setsebool -P httpd_enable_homedirs on",d:"Permanent boolean (-P!)"},
+    {cmd:"setsebool -P httpd_can_network_connect on",d:"Allow Apache outbound"},
+    {cmd:"setsebool -P httpd_can_network_connect_db on",d:"Allow Apache to DB"},
+    {cmd:"setsebool -P httpd_use_nfs on",d:"Allow Apache NFS content"},
+    {cmd:"getsebool -a | grep httpd",d:"List httpd booleans"},
+  ]},
+  {g:"SELinux Ports & Audit",c:[
+    {cmd:"semanage port -a -t http_port_t -p tcp 8080",d:"Allow http on 8080"},
+    {cmd:"semanage port -a -t ssh_port_t -p tcp 2222",d:"Allow ssh on 2222"},
+    {cmd:"semanage port -a -t https_port_t -p tcp 8443",d:"Allow https on 8443"},
+    {cmd:"semanage port -l | grep http",d:"List http port labels"},
+    {cmd:"ausearch -m avc -ts recent",d:"Show recent denials"},
+    {cmd:"ausearch -m avc -ts recent | audit2why",d:"Explain denials"},
+  ]},
+  {g:"Podman Images",c:[
+    {cmd:"podman pull docker.io/library/httpd:latest",d:"Pull httpd"},
+    {cmd:"podman pull registry.access.redhat.com/ubi9/ubi",d:"Pull UBI9"},
+    {cmd:"podman images",d:"List images"},
+    {cmd:"podman build -t myapp:1.0 .",d:"Build from Containerfile"},
+    {cmd:"podman tag myapp:1.0 myapp:latest",d:"Tag image"},
+    {cmd:"podman save -o /tmp/img.tar myapp:1.0",d:"Export to tar"},
+    {cmd:"podman load -i /tmp/img.tar",d:"Import from tar"},
+  ]},
+  {g:"Podman Containers",c:[
+    {cmd:"podman run -d --name myweb -p 8080:80 httpd",d:"Run detached + port"},
+    {cmd:"podman run -d --name myweb -v /web:/usr/local/apache2/htdocs:Z httpd",d:"Volume + SELinux :Z"},
+    {cmd:"podman ps",d:"Running containers"},
+    {cmd:"podman ps -a",d:"ALL containers"},
+    {cmd:"podman stop myweb && podman rm myweb",d:"Stop and remove"},
+    {cmd:"podman rm -f myweb",d:"Force remove"},
+    {cmd:"podman logs -f myweb",d:"Follow logs"},
+    {cmd:"podman exec -it myweb bash",d:"Shell into container"},
+  ]},
+  {g:"Podman Systemd",c:[
+    {cmd:"podman generate systemd --name myweb --files --new",d:"Generate unit file"},
+    {cmd:"systemctl --user daemon-reload",d:"Reload user systemd"},
+    {cmd:"systemctl --user enable --now container-myweb",d:"Enable+start user svc"},
+    {cmd:"loginctl enable-linger devops",d:"Start at boot without login"},
+    {cmd:"loginctl show-user devops | grep Linger",d:"Verify linger=yes"},
+  ]},
+  {g:"LVM Storage",c:[
+    {cmd:"pvcreate /dev/sdb",d:"Create PV"},
+    {cmd:"pvs",d:"List PVs"},
+    {cmd:"vgcreate vg_data /dev/sdb",d:"Create VG"},
+    {cmd:"vgs",d:"List VGs"},
+    {cmd:"lvcreate -L 2G -n lv_storage vg_data",d:"Create LV"},
+    {cmd:"lvs",d:"List LVs"},
+    {cmd:"mkfs.xfs /dev/vg_data/lv_storage",d:"Format XFS"},
+    {cmd:"lvextend -L +1G /dev/vg_data/lv_storage",d:"Extend LV by 1G"},
+    {cmd:"xfs_growfs /mnt/storage",d:"Grow XFS online"},
+  ]},
+  {g:"Systemd",c:[
+    {cmd:"systemctl enable --now httpd",d:"Enable AND start"},
+    {cmd:"systemctl disable --now httpd",d:"Disable AND stop"},
+    {cmd:"systemctl daemon-reload",d:"Reload unit files"},
+    {cmd:"systemctl --failed",d:"List failed services"},
+    {cmd:"journalctl -u httpd -n 50",d:"Last 50 log lines"},
+  ]},
+  {g:"Firewall",c:[
+    {cmd:"firewall-cmd --list-all",d:"Show config"},
+    {cmd:"firewall-cmd --permanent --add-service=http",d:"Allow HTTP"},
+    {cmd:"firewall-cmd --permanent --add-port=8080/tcp",d:"Allow port 8080"},
+    {cmd:"firewall-cmd --reload",d:"Apply rules"},
+  ]},
+  {g:"Scheduling",c:[
+    {cmd:"crontab -e",d:"Edit crontab"},
+    {cmd:"crontab -u alice -e",d:"Edit alice crontab"},
+    {cmd:"atq",d:"List at jobs"},
+    {cmd:"systemctl enable --now crond",d:"Enable crond"},
+  ]},
+  {g:"sudo",c:[
+    {cmd:"visudo",d:"Edit sudoers"},
+    {cmd:"visudo -c",d:"Syntax check"},
+    {cmd:"%sysadmins ALL=(ALL) NOPASSWD: ALL",d:"Group: no password"},
+    {cmd:"bob ALL=(ALL) /usr/bin/systemctl",d:"User: restricted"},
+  ]},
+  {g:"SSH and SSHD",c:[
+    {cmd:"ssh user@192.168.1.20",d:"Connect to remote host"},
+    {cmd:"ssh -p 2222 user@host",d:"Connect on non-standard port"},
+    {cmd:"ssh-keygen -t rsa -b 4096",d:"Generate RSA key pair"},
+    {cmd:"ssh-copy-id user@192.168.1.20",d:"Copy public key to remote"},
+    {cmd:"chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys",d:"Fix SSH key permissions"},
+    {cmd:"systemctl enable --now sshd",d:"Enable and start sshd"},
+    {cmd:"systemctl restart sshd",d:"Restart SSH daemon"},
+    {cmd:"sshd -t",d:"Test sshd_config syntax"},
+    {cmd:"ss -tlnp | grep :22",d:"Confirm sshd listening on port 22"},
+    {cmd:"firewall-cmd --permanent --add-service=ssh",d:"Firewall: allow SSH"},
+    {cmd:"semanage port -a -t ssh_port_t -p tcp 2222",d:"SELinux: allow SSH on 2222"},
+  ]},
+  {g:"sshd_config Settings",c:[
+    {cmd:"vim /etc/ssh/sshd_config",d:"Edit SSH daemon config"},
+    {cmd:"Port 2222",d:"Change SSH port (restart sshd after)"},
+    {cmd:"PermitRootLogin no",d:"Disable root SSH login"},
+    {cmd:"PasswordAuthentication no",d:"Keys-only auth (disable passwords)"},
+    {cmd:"PasswordAuthentication yes",d:"Enable password authentication"},
+    {cmd:"PubkeyAuthentication yes",d:"Enable public key authentication"},
+    {cmd:"AllowUsers alice bob",d:"Restrict SSH to specific users"},
+  ]},
+  {g:"SCP and SFTP",c:[
+    {cmd:"scp file.txt user@192.168.1.20:/tmp/",d:"Copy file TO remote"},
+    {cmd:"scp user@192.168.1.20:/tmp/file.txt .",d:"Copy file FROM remote"},
+    {cmd:"scp -r /local/dir/ user@host:/remote/",d:"Copy directory recursively"},
+    {cmd:"scp -P 2222 file.txt user@host:/tmp/",d:"SCP on custom port (-P uppercase)"},
+    {cmd:"sftp user@192.168.1.20",d:"Open interactive SFTP session"},
+    {cmd:"get remotefile.txt",d:"(sftp) Download file"},
+    {cmd:"put localfile.txt",d:"(sftp) Upload file"},
+    {cmd:"bye",d:"(sftp) Exit session"},
+  ]},
+  {g:"cp and rsync",c:[
+    {cmd:"cp -r /src/ /dest/",d:"Copy directory recursively"},
+    {cmd:"cp -p file1 file2",d:"Preserve permissions and timestamps"},
+    {cmd:"cp -a /src/ /dest/",d:"Archive copy - preserve all attributes"},
+    {cmd:"rsync -av /src/ /dest/",d:"Sync directory verbosely"},
+    {cmd:"rsync -av --delete /src/ /dest/",d:"Sync and remove extras in dest"},
+    {cmd:"rsync -avz user@host:/src/ /dest/",d:"Sync from remote with compression"},
+  ]},
+  {g:"Tuned Performance Profiles",c:[
+    {cmd:"dnf install tuned -y",d:"Install tuned"},
+    {cmd:"systemctl enable --now tuned",d:"Enable and start tuned"},
+    {cmd:"tuned-adm list",d:"List all profiles"},
+    {cmd:"tuned-adm active",d:"Show active profile"},
+    {cmd:"tuned-adm recommend",d:"Recommend best profile for this system"},
+    {cmd:"tuned-adm profile throughput-performance",d:"High-throughput server profile"},
+    {cmd:"tuned-adm profile virtual-guest",d:"Optimized for VMs"},
+    {cmd:"tuned-adm profile balanced",d:"Default balanced profile"},
+    {cmd:"tuned-adm profile latency-performance",d:"Low-latency profile"},
+    {cmd:"tuned-adm profile network-throughput",d:"Network-optimized profile"},
+    {cmd:"tuned-adm off",d:"Disable all tuning"},
+  ]}
+];
+
+/* ============================================================
+   DRILLS
+   ============================================================ */
+var DRILLS=[
+    {cat:"SSH",task:"Enable AND start sshd in one command",answer:"systemctl enable --now sshd",hint:"systemctl enable --now sshd"},
+  {cat:"SSH",task:"Restart the SSH daemon",answer:"systemctl restart sshd",hint:"systemctl restart sshd"},
+  {cat:"SSH",task:"Test sshd_config syntax without restarting",answer:"sshd -t",hint:"sshd -t"},
+  {cat:"SSH",task:"Generate a 4096-bit RSA SSH key pair",answer:"ssh-keygen -t rsa -b 4096",hint:"ssh-keygen -t rsa -b 4096"},
+  {cat:"SSH",task:"Copy your public key to user@192.168.1.20",answer:"ssh-copy-id user@192.168.1.20",hint:"ssh-copy-id user@192.168.1.20"},
+  {cat:"SSH",task:"Set correct permissions on ~/.ssh directory",answer:"chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys",hint:"chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"},
+  {cat:"SSH",task:"Allow SSH through firewall permanently",answer:"firewall-cmd --permanent --add-service=ssh",hint:"firewall-cmd --permanent --add-service=ssh"},
+  {cat:"SSH",task:"Allow TCP port 2222 in SELinux for SSH",answer:"semanage port -a -t ssh_port_t -p tcp 2222",hint:"semanage port -a -t ssh_port_t -p tcp 2222"},
+  {cat:"SSH",task:"Confirm sshd is listening on port 22",answer:"ss -tlnp | grep :22",hint:"ss -tlnp | grep :22"},
+  {cat:"Tuned",task:"Install the tuned package",answer:"dnf install tuned -y",hint:"dnf install tuned -y"},
+  {cat:"Tuned",task:"Enable AND start tuned in one command",answer:"systemctl enable --now tuned",hint:"systemctl enable --now tuned"},
+  {cat:"Tuned",task:"List all available tuned profiles",answer:"tuned-adm list",hint:"tuned-adm list"},
+  {cat:"Tuned",task:"Show the currently active tuned profile",answer:"tuned-adm active",hint:"tuned-adm active"},
+  {cat:"Tuned",task:"Set the throughput-performance tuned profile",answer:"tuned-adm profile throughput-performance",hint:"tuned-adm profile throughput-performance"},
+  {cat:"Tuned",task:"Set the virtual-guest tuned profile",answer:"tuned-adm profile virtual-guest",hint:"tuned-adm profile virtual-guest"},
+  {cat:"Tuned",task:"Get tuned recommendation for this system",answer:"tuned-adm recommend",hint:"tuned-adm recommend"},
+  {cat:"SCP",task:"Copy file.txt to /tmp/ on 192.168.1.20 as user",answer:"scp file.txt user@192.168.1.20:/tmp/",hint:"scp file.txt user@192.168.1.20:/tmp/"},
+  {cat:"SCP",task:"Copy /tmp/file.txt FROM 192.168.1.20 to current dir",answer:"scp user@192.168.1.20:/tmp/file.txt .",hint:"scp user@192.168.1.20:/tmp/file.txt ."},
+  {cat:"SCP",task:"Recursively copy /local/dir/ to remote host",answer:"scp -r /local/dir/ user@host:/remote/dir/",hint:"scp -r /local/dir/ user@host:/remote/dir/"},
+  {cat:"NFS",task:"Install the NFS utilities package",answer:"dnf install nfs-utils -y",hint:"dnf install nfs-utils..."},
+  {cat:"NFS",task:"Enable AND start nfs-server in one command",answer:"systemctl enable --now nfs-server",hint:"systemctl enable --now nfs-server"},
+  {cat:"NFS",task:"Apply /etc/exports without restarting",answer:"exportfs -rav",hint:"exportfs -rav"},
+  {cat:"NFS",task:"List all active NFS exports verbosely",answer:"exportfs -v",hint:"exportfs -v"},
+  {cat:"NFS",task:"Show exports from 192.168.1.10",answer:"showmount -e 192.168.1.10",hint:"showmount -e 192.168.1.10"},
+  {cat:"NFS",task:"Permanently allow nfs service through firewall",answer:"firewall-cmd --permanent --add-service=nfs",hint:"firewall-cmd --permanent --add-service=nfs"},
+  {cat:"NFS",task:"Permanently allow rpc-bind through firewall",answer:"firewall-cmd --permanent --add-service=rpc-bind",hint:"firewall-cmd --permanent --add-service=rpc-bind"},
+  {cat:"NFS",task:"Permanently allow mountd through firewall",answer:"firewall-cmd --permanent --add-service=mountd",hint:"firewall-cmd --permanent --add-service=mountd"},
+  {cat:"NFS",task:"Reload firewall to apply permanent rules",answer:"firewall-cmd --reload",hint:"firewall-cmd --reload"},
+  {cat:"NFS",task:"Install autofs AND nfs-utils together",answer:"dnf install autofs nfs-utils -y",hint:"dnf install autofs nfs-utils -y"},
+  {cat:"NFS",task:"Enable AND start the autofs service",answer:"systemctl enable --now autofs",hint:"systemctl enable --now autofs"},
+  {cat:"SELinux",task:"Check the current SELinux mode",answer:"getenforce",hint:"ge..."},
+  {cat:"SELinux",task:"Temporarily set SELinux to Permissive",answer:"setenforce 0",hint:"setenforce 0"},
+  {cat:"SELinux",task:"Set SELinux back to Enforcing",answer:"setenforce 1",hint:"setenforce 1"},
+  {cat:"SELinux",task:"Show detailed SELinux status",answer:"sestatus",hint:"sestatus"},
+  {cat:"SELinux",task:"View SELinux file contexts in /var/www/html/",answer:"ls -lZ /var/www/html/",hint:"ls -lZ ..."},
+  {cat:"SELinux",task:"Add PERMANENT context httpd_sys_content_t to /webdata(.*)",answer:'semanage fcontext -a -t httpd_sys_content_t "/webdata(/.*)?"',hint:'semanage fcontext -a -t httpd_sys_content_t "/webdata(/.*)?"'},
+  {cat:"SELinux",task:"Apply context rules recursively to /webdata/",answer:"restorecon -Rv /webdata/",hint:"restorecon -Rv /webdata/"},
+  {cat:"SELinux",task:"List custom local SELinux context rules",answer:"semanage fcontext -l | grep local",hint:"semanage fcontext -l | grep local"},
+  {cat:"SELinux",task:"Show recent AVC denial entries",answer:"ausearch -m avc -ts recent",hint:"ausearch -m avc -ts recent"},
+  {cat:"SELinux",task:"Explain recent SELinux denials in plain English",answer:"ausearch -m avc -ts recent | audit2why",hint:"ausearch ... | audit2why"},
+  {cat:"SELinux",task:"Permanently set boolean httpd_enable_homedirs on",answer:"setsebool -P httpd_enable_homedirs on",hint:"setsebool -P httpd_enable_homedirs on"},
+  {cat:"SELinux",task:"Permanently allow Apache outbound connections",answer:"setsebool -P httpd_can_network_connect on",hint:"setsebool -P httpd_can_network_connect on"},
+  {cat:"SELinux",task:"Add TCP 8888 as allowed HTTP port in SELinux",answer:"semanage port -a -t http_port_t -p tcp 8888",hint:"semanage port -a -t http_port_t -p tcp 8888"},
+  {cat:"SELinux",task:"Add TCP 2222 as allowed SSH port in SELinux",answer:"semanage port -a -t ssh_port_t -p tcp 2222",hint:"semanage port -a -t ssh_port_t -p tcp 2222"},
+  {cat:"SELinux",task:"Add TCP 8443 as allowed HTTPS port in SELinux",answer:"semanage port -a -t https_port_t -p tcp 8443",hint:"semanage port -a -t https_port_t -p tcp 8443"},
+  {cat:"SELinux",task:"Install semanage (policycoreutils-python-utils)",answer:"dnf install policycoreutils-python-utils -y",hint:"dnf install policycoreutils-python-utils -y"},
+  {cat:"Containers",task:"Pull UBI9 from Red Hat registry",answer:"podman pull registry.access.redhat.com/ubi9/ubi",hint:"podman pull registry.access.redhat.com/ubi9/ubi"},
+  {cat:"Containers",task:"Run detached httpd named myweb on port 8080",answer:"podman run -d --name myweb -p 8080:80 httpd",hint:"podman run -d --name myweb -p 8080:80 httpd"},
+  {cat:"Containers",task:"List only RUNNING containers",answer:"podman ps",hint:"podman ps"},
+  {cat:"Containers",task:"List ALL containers including stopped",answer:"podman ps -a",hint:"podman ps -a"},
+  {cat:"Containers",task:"Follow live logs of container myweb",answer:"podman logs -f myweb",hint:"podman logs -f myweb"},
+  {cat:"Containers",task:"Shell into running container myweb",answer:"podman exec -it myweb bash",hint:"podman exec -it myweb bash"},
+  {cat:"Containers",task:"Force remove running container myweb",answer:"podman rm -f myweb",hint:"podman rm -f myweb"},
+  {cat:"Containers",task:"Generate systemd unit file from container myweb",answer:"podman generate systemd --name myweb --files --new",hint:"podman generate systemd --name myweb --files --new"},
+  {cat:"Containers",task:"Reload USER-level systemd daemon",answer:"systemctl --user daemon-reload",hint:"systemctl --user daemon-reload"},
+  {cat:"Containers",task:"Enable AND start user service container-myweb",answer:"systemctl --user enable --now container-myweb",hint:"systemctl --user enable --now container-myweb"},
+  {cat:"Containers",task:"Enable linger for devops",answer:"loginctl enable-linger devops",hint:"loginctl enable-linger devops"},
+  {cat:"Users",task:"Create alice: UID=1501 primary=developers secondary=sysadmins",answer:"useradd -u 1501 -g developers -G sysadmins alice",hint:"useradd -u 1501 -g developers -G sysadmins alice"},
+  {cat:"Users",task:"Lock carol without deleting",answer:"usermod -L carol",hint:"usermod -L carol"},
+  {cat:"Users",task:"Set alice password RedHat1! non-interactively",answer:"echo 'alice:RedHat1!' | chpasswd",hint:"echo 'alice:RedHat1!' | chpasswd"},
+  {cat:"Users",task:"Set bob max password age to 30 days",answer:"chage -M 30 bob",hint:"chage -M 30 bob"},
+  {cat:"Users",task:"Force alice to change password on next login",answer:"chage -d 0 alice",hint:"chage -d 0 alice"},
+  {cat:"Users",task:"Add alice to sysadmins keeping existing groups",answer:"usermod -aG sysadmins alice",hint:"usermod -aG sysadmins alice"},
+  {cat:"Storage",task:"Create a physical volume on /dev/sdb",answer:"pvcreate /dev/sdb",hint:"pvcreate /dev/sdb"},
+  {cat:"Storage",task:"Create volume group vg_data using /dev/sdb",answer:"vgcreate vg_data /dev/sdb",hint:"vgcreate vg_data /dev/sdb"},
+  {cat:"Storage",task:"Create 2G logical volume lv_storage in vg_data",answer:"lvcreate -L 2G -n lv_storage vg_data",hint:"lvcreate -L 2G -n lv_storage vg_data"},
+  {cat:"Storage",task:"Format /dev/vg_data/lv_storage with XFS",answer:"mkfs.xfs /dev/vg_data/lv_storage",hint:"mkfs.xfs /dev/vg_data/lv_storage"},
+  {cat:"Storage",task:"Extend lv_storage by 1G while mounted",answer:"lvextend -L +1G /dev/vg_data/lv_storage",hint:"lvextend -L +1G /dev/vg_data/lv_storage"},
+  {cat:"Storage",task:"Grow XFS filesystem on /mnt/storage",answer:"xfs_growfs /mnt/storage",hint:"xfs_growfs /mnt/storage"},
+  {cat:"Systemd",task:"Enable AND start httpd immediately",answer:"systemctl enable --now httpd",hint:"systemctl enable --now httpd"},
+  {cat:"Systemd",task:"Reload systemd after editing unit files",answer:"systemctl daemon-reload",hint:"systemctl daemon-reload"},
+  {cat:"Systemd",task:"List all FAILED systemd services",answer:"systemctl --failed",hint:"systemctl --failed"},
+  {cat:"Systemd",task:"Show last 50 journal lines for httpd",answer:"journalctl -u httpd -n 50",hint:"journalctl -u httpd -n 50"},
+];
+
+/* ============================================================
+   SIMULATED RESPONSES
+   ============================================================ */
+var RESP={
+    "tuned-adm list":["Available profiles:\n- balanced\n- desktop\n- latency-performance\n- network-throughput\n- throughput-performance\n- virtual-guest\nCurrent active profile: virtual-guest","c-ok"],
+  "tuned-adm active":["Current active profile: virtual-guest","c-ok"],
+  "tuned-adm recommend":["virtual-guest","c-ok"],
+  "tuned-adm profile throughput-performance":["Switching to profile 'throughput-performance'\nSuccessfully changed profile.","c-ok"],
+  "tuned-adm profile virtual-guest":["Switching to profile 'virtual-guest'\nSuccessfully changed profile.","c-ok"],
+  "tuned-adm profile balanced":["Switching to profile 'balanced'\nSuccessfully changed profile.","c-ok"],
+  "sshd -t":["(no output = syntax OK)","c-ok"],
+  "ss -tlnp | grep :22":["LISTEN 0 128 0.0.0.0:22 0.0.0.0:* users:((\"sshd\",pid=1234,fd=3))","c-ok"],
+  "systemctl status sshd":["* sshd.service - OpenSSH server daemon\n   Loaded: loaded (/usr/lib/systemd/system/sshd.service; enabled)\n   Active: active (running)","c-ok"],
+  "getenforce":["Enforcing","c-ok"],
+  "setenforce 0":["SELinux mode set to Permissive (temporary)","c-warn"],
+  "setenforce 1":["SELinux mode set to Enforcing","c-ok"],
+  "sestatus":["SELinux status: enabled\nCurrent mode:   enforcing\nPolicy name:    targeted","c-ok"],
+  "exportfs -v":["/nfsexports/team  192.168.1.0/24(rw,sync,root_squash)","c-ok"],
+  "exportfs -rav":["exporting 192.168.1.0/24:/nfsexports/team","c-ok"],
+  "showmount -e localhost":["Export list for localhost:\n/nfsexports/team  192.168.1.0/24","c-ok"],
+  "showmount -e 192.168.1.10":["Export list for 192.168.1.10:\n/nfsexports/team  192.168.1.0/24","c-ok"],
+  "podman ps":["CONTAINER ID  IMAGE          COMMAND   CREATED     STATUS    PORTS              NAMES\na1b2c3d4e5f6  library/httpd  httpd-fg  2 min ago  Up 2 min  0.0.0.0:8080->80   myweb","c-ok"],
+  "podman ps -a":["CONTAINER ID  IMAGE         COMMAND   CREATED    STATUS     NAMES\na1b2c3d4      library/httpd  httpd-fg  2m ago     Up 2m      myweb\nb2c3d4        ubi9/ubi       /bin/bash  10m ago    Exited(0)  oldtest","c-ok"],
+  "podman images":["REPOSITORY                            TAG     IMAGE ID      CREATED      SIZE\ndocker.io/library/httpd             latest  5d49975d5a45  2 weeks ago  145 MB\nregistry.access.redhat.com/ubi9/ubi latest  8121a9f5303a  3 weeks ago  216 MB","c-ok"],
+  "systemctl --failed":["0 loaded units listed. No failed services.","c-ok"],
+  "firewall-cmd --reload":["success","c-ok"],
+  "firewall-cmd --list-services":["cockpit dhcpv6-client nfs rpc-bind mountd ssh","c-ok"],
+  "firewall-cmd --list-all":["public (active)\n  services: cockpit dhcpv6-client nfs rpc-bind mountd ssh\n  ports: 8080/tcp 8888/tcp","c-info"],
+  "loginctl enable-linger devops":["Linger enabled for user devops.","c-ok"],
+  "loginctl show-user devops | grep Linger":["Linger=yes","c-ok"],
+  "dnf repolist":["repo id    repo name\nAppStream  RHEL 9 AppStream Local\nBaseOS     RHEL 9 BaseOS Local","c-ok"],
+  "pvs":["  PV         VG      Fmt  Attr PSize  PFree\n  /dev/sdb   vg_data lvm2 a--  5.00g 3.00g","c-ok"],
+  "vgs":["  VG      #PV #LV Attr   VSize  VFree\n  vg_data   1   1 wz--n- 5.00g 3.00g","c-ok"],
+  "lvs":["  LV         VG      Attr       LSize\n  lv_storage vg_data -wi-ao---- 2.00g","c-ok"],
+  "id alice":["uid=1501(alice) gid=1002(developers) groups=1002(developers),1001(sysadmins)","c-ok"],
+  "visudo -c":["/etc/sudoers: parsed OK\n/etc/sudoers.d/sysadmins: parsed OK\n/etc/sudoers.d/bob: parsed OK","c-ok"],
+  "free -m":["              total   used   free\nMem:           7946   1203   5821\nSwap:          2047      0   2047","c-ok"],
+  "uptime":["16:00:01 up 2 days,  3:45,  1 user,  load average: 0.02, 0.05, 0.01","c-ok"],
+  "df -h /mnt/storage":["Filesystem                    Size  Used Avail Use% Mounted on\n/dev/mapper/vg_data-lv_storage  3.0G   65M  2.9G   3% /mnt/storage","c-ok"],
+  "atq":["1\t2026-08-18 16:15:00 a root","c-ok"],
+  "hostnamectl":["   Static hostname: server1.example.com\n      Kernel: Linux 5.14.0-362.el9.x86_64\n  OS: Red Hat Enterprise Linux 9.3","c-ok"],
+};
+
+var CTXFB={
+    "tuned-adm profile":"OK: Tuned profile applied.",
+  "tuned-adm off":"OK: Tuned disabled.",
+  "ssh-keygen":"OK: Key pair generated in ~/.ssh/",
+  "ssh-copy-id":"OK: Public key copied to remote authorized_keys.",
+  "scp ":"OK: File copied via SCP.",
+  "rsync":"OK: rsync transfer complete.",
+  "enable --now":"OK: Service enabled and will start on boot.",
+  "restorecon":"OK: SELinux contexts applied. (restorecon -Rv run)",
+  "semanage fcontext -a":"Warning: Rule added. Now run: restorecon -Rv <path>",
+  "semanage fcontext -m":"Warning: Rule modified. Now run: restorecon -Rv <path>",
+  "semanage port -a":"OK: Port label added to SELinux policy.",
+  "setsebool -P":"OK: Boolean set PERMANENTLY. Survives reboot.",
+  "chpasswd":"OK: Password updated.",
+  "chage":"OK: Password aging updated.",
+  "useradd":"OK: User created.",
+  "groupadd":"OK: Group created.",
+  "usermod -L":"OK: Account locked.",
+  "usermod -U":"OK: Account unlocked.",
+  "usermod -aG":"OK: User added to group.",
+  "pvcreate":"OK: Physical volume created.",
+  "vgcreate":"OK: Volume group created.",
+  "lvcreate":"OK: Logical volume created.",
+  "mkfs.xfs":"OK: XFS filesystem created.",
+  "mkfs.ext4":"OK: ext4 filesystem created.",
+  "lvextend":"OK: LV extended. Now run xfs_growfs or resize2fs.",
+  "xfs_growfs":"OK: XFS filesystem grown to fill LV.",
+  "podman pull":"OK: Image downloaded.",
+  "podman run":"OK: Container started. ID: a1b2c3d4e5f6",
+  "podman stop":"OK: Container stopped.",
+  "podman rm":"OK: Container removed.",
+  "podman build":"OK: Image built successfully.",
+  "podman generate":"OK: Systemd unit file generated.",
+  "podman save":"OK: Image saved to tar.",
+  "podman load":"OK: Image loaded from tar.",
+  "dnf install":"OK: Packages installed.",
+  "exportfs":"OK: Exports applied.",
+  "loginctl enable-linger":"OK: Linger enabled.",
+  "firewall-cmd --reload":"OK: Firewall rules applied.",
+  "systemctl daemon-reload":"OK: Systemd reloaded.",
+};
+
+/* ============================================================
+   FREE-TYPE TERMINAL
+   ============================================================ */
+var hist=[],histIdx=-1,mode='free',cur=null,drillQ=[],sOK=0,sBAD=0;
+
+/* ============================================================
+   ESSENTIAL TOOLS REFERENCE
+   ============================================================ */
+var TOOLS=[
+  {cat:"File Management",tools:[
+    {name:"find",desc:"Search filesystem",patterns:[
+      {cmd:"find /etc -name '*.conf'",d:"Find by name pattern"},
+      {cmd:"find /var -type f -mtime -3",d:"Modified in last 3 days"},
+      {cmd:"find /usr -type f -size +5M",d:"Files larger than 5MB"},
+      {cmd:"find /home -user alice",d:"Files owned by user"},
+      {cmd:"find / -perm -4000 2>/dev/null",d:"Files with SUID bit"},
+      {cmd:"find /tmp -type f -mtime +7 -delete",d:"Delete files older than 7 days"},
+    ]},
+    {name:"grep",desc:"Search file contents",patterns:[
+      {cmd:"grep 'pattern' /etc/passwd",d:"Search in file"},
+      {cmd:"grep -r 'pattern' /etc/",d:"Recursive search"},
+      {cmd:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'",d:"Show active config (no comments)"},
+      {cmd:"grep -i 'error' /var/log/messages",d:"Case-insensitive search"},
+      {cmd:"grep -n 'PermitRoot' /etc/ssh/sshd_config",d:"Show line numbers"},
+      {cmd:"grep -l 'pattern' /etc/*.conf",d:"List matching files only"},
+    ]},
+    {name:"tar",desc:"Archive and compress",patterns:[
+      {cmd:"tar -czf /tmp/backup.tar.gz /etc/ssh",d:"Create gzip archive"},
+      {cmd:"tar -cjf /tmp/backup.tar.bz2 /var/log",d:"Create bzip2 archive"},
+      {cmd:"tar -tzvf /tmp/backup.tar.gz",d:"List archive contents"},
+      {cmd:"tar -xzvf /tmp/backup.tar.gz -C /restore/",d:"Extract to directory"},
+      {cmd:"tar -czf - /etc | ssh user@host 'cat > /tmp/etc.tar.gz'",d:"Stream archive over SSH"},
+    ]},
+    {name:"cp / mv / rm",desc:"Copy move delete",patterns:[
+      {cmd:"cp -a /src/ /dest/",d:"Archive copy (preserve all)"},
+      {cmd:"cp -p file1 file2",d:"Preserve permissions+timestamps"},
+      {cmd:"cp -r /src/ /dest/",d:"Copy directory recursively"},
+      {cmd:"mv /old/path /new/path",d:"Move or rename"},
+      {cmd:"rm -rf /path/to/dir",d:"Remove directory recursively (careful!)"},
+      {cmd:"rsync -av --delete /src/ /dest/",d:"Sync with delete"},
+    ]},
+    {name:"ln",desc:"Create links",patterns:[
+      {cmd:"ln -s /path/to/target /path/to/link",d:"Create symbolic link"},
+      {cmd:"ln /path/to/source /path/to/hardlink",d:"Create hard link"},
+      {cmd:"ls -la /path/to/link",d:"Verify link target"},
+      {cmd:"readlink -f /path/to/link",d:"Resolve full path of symlink"},
+    ]},
+  ]},
+  {cat:"Text Processing",tools:[
+    {name:"awk",desc:"Column and field processing",patterns:[
+      {cmd:"awk '{print $1}' /etc/passwd",d:"Print first column"},
+      {cmd:"awk -F: '{print $1,$3}' /etc/passwd",d:"Use : delimiter, print cols 1 and 3"},
+      {cmd:"awk -F: '$3>=1000{print $1}' /etc/passwd",d:"Users with UID >= 1000"},
+      {cmd:"awk 'NR>1{print}' file.txt",d:"Skip first line (header)"},
+      {cmd:"df -h | awk 'NR>1{print $5,$6}'",d:"Disk usage percent and mount"},
+      {cmd:"free -m | awk '/^Mem:/{print $3/$2*100}'",d:"Memory usage percent"},
+    ]},
+    {name:"sed",desc:"Stream text editor",patterns:[
+      {cmd:"sed -i 's/old/new/g' file.txt",d:"Replace all occurrences in-place"},
+      {cmd:"sed -n '10,20p' file.txt",d:"Print lines 10 to 20"},
+      {cmd:"sed '/^#/d' /etc/ssh/sshd_config",d:"Delete comment lines"},
+      {cmd:"sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config",d:"Disable root login"},
+      {cmd:"sed -i '/^SELINUX=/c\\SELINUX=enforcing' /etc/selinux/config",d:"Change SELINUX line"},
+    ]},
+    {name:"cut / sort / uniq",desc:"Column and line tools",patterns:[
+      {cmd:"cut -d: -f1,3 /etc/passwd",d:"Cut fields 1 and 3 with : delimiter"},
+      {cmd:"sort -t: -k3 -n /etc/passwd",d:"Sort by 3rd field numerically"},
+      {cmd:"sort file.txt | uniq -c | sort -rn",d:"Count occurrences, sort by frequency"},
+      {cmd:"cut -d: -f7 /etc/passwd | sort | uniq",d:"List unique login shells"},
+    ]},
+    {name:"tr / wc / head / tail",desc:"Misc text tools",patterns:[
+      {cmd:"wc -l /var/log/messages",d:"Count lines in file"},
+      {cmd:"head -20 /var/log/messages",d:"First 20 lines"},
+      {cmd:"tail -f /var/log/messages",d:"Follow log in real time"},
+      {cmd:"tail -100 /var/log/messages | grep error",d:"Last 100 lines, filtered"},
+      {cmd:"tr 'a-z' 'A-Z' < file.txt",d:"Lowercase to uppercase"},
+    ]},
+  ]},
+  {cat:"Process and System",tools:[
+    {name:"ps",desc:"Show running processes",patterns:[
+      {cmd:"ps aux",d:"All processes with user and CPU%"},
+      {cmd:"ps aux --sort=-%cpu | head -10",d:"Top 10 by CPU usage"},
+      {cmd:"ps aux --sort=-%mem | head -10",d:"Top 10 by memory usage"},
+      {cmd:"ps -ef | grep httpd",d:"Find specific process"},
+      {cmd:"pgrep -a httpd",d:"Find process by name with PID"},
+    ]},
+    {name:"top / htop",desc:"Live process monitor",patterns:[
+      {cmd:"top",d:"Interactive process monitor (q to quit)"},
+      {cmd:"top -bn1 | head -20",d:"One-shot snapshot"},
+      {cmd:"top -u alice",d:"Show only alice processes"},
+    ]},
+    {name:"ss / netstat",desc:"Network socket status",patterns:[
+      {cmd:"ss -tlnp",d:"TCP listening ports with process"},
+      {cmd:"ss -ulnp",d:"UDP listening ports"},
+      {cmd:"ss -tlnp | grep :22",d:"Check sshd port"},
+      {cmd:"ss -tlnp | grep :80",d:"Check httpd port"},
+      {cmd:"ss -s",d:"Socket statistics summary"},
+    ]},
+    {name:"systemctl",desc:"Manage services and units",patterns:[
+      {cmd:"systemctl enable --now httpd",d:"Enable AND start immediately"},
+      {cmd:"systemctl disable --now httpd",d:"Disable AND stop"},
+      {cmd:"systemctl restart httpd",d:"Restart service"},
+      {cmd:"systemctl status httpd",d:"Show status"},
+      {cmd:"systemctl is-active httpd",d:"Is running?"},
+      {cmd:"systemctl is-enabled httpd",d:"Starts at boot?"},
+      {cmd:"systemctl --failed",d:"List all failed services"},
+      {cmd:"systemctl daemon-reload",d:"Reload after editing unit files"},
+      {cmd:"systemctl list-units --type=service",d:"List all service units"},
+    ]},
+    {name:"journalctl",desc:"View systemd logs",patterns:[
+      {cmd:"journalctl -u httpd -n 50",d:"Last 50 lines for a service"},
+      {cmd:"journalctl -u httpd -f",d:"Follow service log live"},
+      {cmd:"journalctl -xe",d:"Recent errors with context"},
+      {cmd:"journalctl --since '1 hour ago'",d:"Logs from last hour"},
+      {cmd:"journalctl -b",d:"Logs from current boot"},
+      {cmd:"journalctl -p err -b",d:"Error-level only, this boot"},
+    ]},
+    {name:"free / df / du",desc:"Memory and disk usage",patterns:[
+      {cmd:"free -m",d:"Memory usage in MB"},
+      {cmd:"df -h",d:"Disk usage human-readable"},
+      {cmd:"df -h /mnt/storage",d:"Usage for specific mount"},
+      {cmd:"du -sh /var/log/",d:"Total size of directory"},
+      {cmd:"du -sh /var/log/* | sort -rh | head -10",d:"Top 10 largest in dir"},
+    ]},
+  ]},
+  {cat:"Networking",tools:[
+    {name:"nmcli",desc:"NetworkManager CLI",patterns:[
+      {cmd:"nmcli con show",d:"List all connections"},
+      {cmd:"nmcli device status",d:"Show all network devices"},
+      {cmd:"nmcli con mod ens33 ipv4.method manual ipv4.addresses 192.168.1.10/24",d:"Set static IP"},
+      {cmd:"nmcli con mod ens33 ipv4.gateway 192.168.1.1 ipv4.dns 8.8.8.8",d:"Set gateway and DNS"},
+      {cmd:"nmcli con down ens33 && nmcli con up ens33",d:"Restart connection"},
+      {cmd:"nmcli con add type ethernet con-name eth0 ifname ens33",d:"Add new connection"},
+    ]},
+    {name:"ip",desc:"IP address and routing",patterns:[
+      {cmd:"ip addr show",d:"Show all interfaces and IPs"},
+      {cmd:"ip addr show ens33",d:"Show specific interface"},
+      {cmd:"ip route show",d:"Show routing table"},
+      {cmd:"ip link set ens33 up",d:"Bring interface up"},
+      {cmd:"ping -c 4 192.168.1.1",d:"Test connectivity (4 packets)"},
+    ]},
+    {name:"ssh / scp / sftp",desc:"Remote access and file transfer",patterns:[
+      {cmd:"ssh user@192.168.1.20",d:"Connect to remote host"},
+      {cmd:"ssh -p 2222 user@host",d:"SSH on non-standard port"},
+      {cmd:"ssh-keygen -t rsa -b 4096",d:"Generate RSA key pair"},
+      {cmd:"ssh-copy-id user@192.168.1.20",d:"Deploy public key to remote"},
+      {cmd:"scp file.txt user@host:/tmp/",d:"Copy file to remote"},
+      {cmd:"scp user@host:/tmp/file.txt .",d:"Copy file from remote"},
+      {cmd:"scp -r /dir/ user@host:/dest/",d:"Copy directory to remote"},
+      {cmd:"sftp user@host",d:"Interactive file transfer session"},
+    ]},
+    {name:"firewall-cmd",desc:"Firewall management",patterns:[
+      {cmd:"firewall-cmd --list-all",d:"Show full firewall config"},
+      {cmd:"firewall-cmd --permanent --add-service=http",d:"Allow HTTP permanently"},
+      {cmd:"firewall-cmd --permanent --add-service=https",d:"Allow HTTPS permanently"},
+      {cmd:"firewall-cmd --permanent --add-port=8080/tcp",d:"Open custom port"},
+      {cmd:"firewall-cmd --reload",d:"Apply permanent rules"},
+      {cmd:"firewall-cmd --permanent --remove-service=http",d:"Remove service rule"},
+    ]},
+    {name:"tuned-adm",desc:"Performance tuning profiles",patterns:[
+      {cmd:"tuned-adm list",d:"List all available profiles"},
+      {cmd:"tuned-adm active",d:"Show current active profile"},
+      {cmd:"tuned-adm recommend",d:"Get recommended profile for this system"},
+      {cmd:"tuned-adm profile virtual-guest",d:"Apply VM-optimized profile"},
+      {cmd:"tuned-adm profile throughput-performance",d:"Apply server throughput profile"},
+      {cmd:"tuned-adm profile balanced",d:"Apply default balanced profile"},
+    ]},
+  ]},
+  {cat:"Storage",tools:[
+    {name:"lsblk / fdisk",desc:"Block device management",patterns:[
+      {cmd:"lsblk",d:"List all block devices"},
+      {cmd:"lsblk -f",d:"Show filesystems and UUIDs"},
+      {cmd:"fdisk -l",d:"List partitions on all disks"},
+      {cmd:"fdisk /dev/sdb",d:"Partition disk interactively"},
+      {cmd:"blkid /dev/sdb1",d:"Show UUID and filesystem type"},
+    ]},
+    {name:"LVM",desc:"Logical Volume Management",patterns:[
+      {cmd:"pvcreate /dev/sdb",d:"Create physical volume"},
+      {cmd:"vgcreate vg_data /dev/sdb",d:"Create volume group"},
+      {cmd:"lvcreate -L 2G -n lv_data vg_data",d:"Create 2G logical volume"},
+      {cmd:"mkfs.xfs /dev/vg_data/lv_data",d:"Format with XFS"},
+      {cmd:"lvextend -L +1G /dev/vg_data/lv_data",d:"Extend LV by 1G (online)"},
+      {cmd:"xfs_growfs /mnt/data",d:"Grow XFS to fill new LV space"},
+      {cmd:"pvs && vgs && lvs",d:"Show all PV/VG/LV info"},
+    ]},
+    {name:"mount / fstab",desc:"Mounting filesystems",patterns:[
+      {cmd:"mount /dev/vg_data/lv_data /mnt/data",d:"Mount manually"},
+      {cmd:"mount -a",d:"Mount all fstab entries"},
+      {cmd:"umount /mnt/data",d:"Unmount"},
+      {cmd:"mount | grep xfs",d:"Show mounted XFS filesystems"},
+      {cmd:"echo '/dev/vg_data/lv_data /mnt/data xfs defaults 0 0' >> /etc/fstab",d:"Add persistent fstab entry"},
+    ]},
+  ]},
+  {cat:"Security",tools:[
+    {name:"chmod / chown",desc:"File permissions",patterns:[
+      {cmd:"chmod 755 /path/to/file",d:"rwxr-xr-x"},
+      {cmd:"chmod 644 /path/to/file",d:"rw-r--r--"},
+      {cmd:"chmod 2770 /projects/dev",d:"770 + setgid bit"},
+      {cmd:"chmod 1777 /projects/shared",d:"rwxrwxrwt sticky bit"},
+      {cmd:"chown alice:developers /projects/dev",d:"Set owner and group"},
+      {cmd:"chown -R alice /home/alice/",d:"Change owner recursively"},
+    ]},
+    {name:"SELinux tools",desc:"semanage restorecon audit",patterns:[
+      {cmd:"getenforce",d:"Show SELinux mode"},
+      {cmd:"setenforce 0",d:"Temporarily Permissive"},
+      {cmd:"setenforce 1",d:"Temporarily Enforcing"},
+      {cmd:"ls -lZ /path/",d:"View file SELinux contexts"},
+      {cmd:"semanage fcontext -a -t httpd_sys_content_t \"/web(/.*)?\"",d:"Add permanent context rule"},
+      {cmd:"restorecon -Rv /web/",d:"Apply context rules (always after semanage!)"},
+      {cmd:"setsebool -P httpd_can_network_connect on",d:"Set boolean permanently"},
+      {cmd:"getsebool -a | grep httpd",d:"List httpd booleans"},
+      {cmd:"semanage port -a -t http_port_t -p tcp 8080",d:"Allow HTTP on port 8080"},
+      {cmd:"ausearch -m avc -ts recent | audit2why",d:"Explain recent SELinux denials"},
+    ]},
+    {name:"openssl",desc:"Certificates and crypto",patterns:[
+      {cmd:"openssl genrsa -out server.key 2048",d:"Generate RSA private key"},
+      {cmd:"openssl req -new -key server.key -out server.csr",d:"Create certificate signing request"},
+      {cmd:"openssl req -x509 -days 365 -key server.key -in server.csr -out server.crt",d:"Self-sign certificate"},
+      {cmd:"openssl x509 -in server.crt -text -noout",d:"View certificate details"},
+    ]},
+  ]},
+  {cat:"Scripting",tools:[
+    {name:"bash essentials",desc:"Key scripting constructs",patterns:[
+      {cmd:"#!/bin/bash",d:"Shebang line (first line of every script)"},
+      {cmd:"chmod +x /usr/local/bin/script.sh",d:"Make script executable"},
+      {cmd:"[ -f file ] && echo 'exists'",d:"Test file exists"},
+      {cmd:"[ -d /path ] || { echo 'missing'; exit 1; }",d:"Exit if directory missing"},
+      {cmd:"for i in 1 2 3; do echo $i; done",d:"For loop"},
+      {cmd:"while IFS=, read -r U G P; do echo $U; done < file.csv",d:"Read CSV line by line"},
+      {cmd:"VAR=$(command)",d:"Capture command output"},
+      {cmd:"echo \"$(date '+%Y-%m-%d %H:%M:%S') - msg\" >> /var/log/app.log",d:"Timestamped log entry"},
+    ]},
+    {name:"cron syntax",desc:"Crontab schedule format",patterns:[
+      {cmd:"30 2 * * * /script.sh",d:"Daily at 2:30 AM"},
+      {cmd:"0 3 * * 0 /script.sh",d:"Every Sunday at 3:00 AM"},
+      {cmd:"*/15 * * * * /script.sh",d:"Every 15 minutes"},
+      {cmd:"0 */6 * * * /script.sh",d:"Every 6 hours"},
+      {cmd:"crontab -e",d:"Edit your crontab"},
+      {cmd:"crontab -u alice -e",d:"Edit alice crontab (as root)"},
+      {cmd:"crontab -l",d:"List your crontab"},
+    ]},
+  ]},
+];
+
+function renderToolsSidebar(){
+  var sc=document.getElementById('sidebar-content');
+  sc.innerHTML='';
+  TOOLS.forEach(function(section){
+    var catDiv=document.createElement('div');
+    catDiv.innerHTML='<div class="tool-cat">'+xe(section.cat)+'</div>';
+    section.tools.forEach(function(tool){
+      var tid='tool-'+tool.name.replace(/[^a-z0-9]/gi,'');
+      var wrap=document.createElement('div');
+      wrap.innerHTML=
+        '<div class="tool-item" onclick="toggleTool(\''+tid+'\')">' +
+          '<span class="tool-name">'+xe(tool.name)+'</span>' +
+          ' <span style="color:#555;font-size:9px">- '+xe(tool.desc)+'</span>' +
+        '</div>' +
+        '<div class="tool-detail" id="'+tid+'">' +
+          tool.patterns.map(function(p){
+            return '<div class="tool-pattern" onclick="pasteTool(\''+xe(p.cmd.replace(/'/g,"\\x27")).replace(/\\/g,'\\\\')+'\')">' +
+              '<span class="tp-cmd">$ '+xe(p.cmd)+'</span>' +
+              '<span class="tp-desc">'+xe(p.d)+'</span>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      catDiv.appendChild(wrap);
+    });
+    sc.appendChild(catDiv);
+  });
+}
+
+function toggleTool(id){
+  var el=document.getElementById(id);
+  var open=el.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.tool-detail').forEach(function(d){d.classList.remove('open');});
+  if(!open) el.classList.add('open');
+}
+
+function pasteTool(cmd){
+  // paste into whichever input is active
+  var inp=document.getElementById('pex-input');
+  var free=document.getElementById('cmd-input');
+  if(document.getElementById('panel-practice').style.display!=='none'){
+    inp.value=cmd; inp.focus();
+  } else {
+    free.value=cmd; free.focus();
+  }
+}
+function xe(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function p(txt,cls){var o=document.getElementById('output');var d=document.createElement('div');d.className='ol '+(cls||'c-info');d.textContent=txt;o.appendChild(d);o.scrollTop=o.scrollHeight;}
+function pCmd(cmd){var o=document.getElementById('output');var d=document.createElement('div');d.className='ol';d.innerHTML='<span class="c-prompt">[root@server1 ~]# </span><span class="c-cmd">'+xe(cmd)+'</span>';o.appendChild(d);o.scrollTop=o.scrollHeight;}
+function focusInput(){document.getElementById('cmd-input').focus();}
+function clearOutput(){document.getElementById('output').innerHTML='';welcome();}
+
+function welcome(){
+  p('==============================================================','c-sep');
+  p('  RHCSA EX200 - Terminal Practice  |  RHEL 9','c-warn');
+  p('==============================================================','c-sep');
+  p('');
+  p('  CHEAT SHEET  - Click commands to paste them','c-dim');
+  p('  DRILLS       - Type commands from memory with scoring','c-dim');
+  p('  PRACTICE     - Timed exam tasks + integrated terminal','c-dim');
+  p('  TRACKER      - Full mock exam tracker with timer','c-dim');
+  p('');
+  p('  Arrow UP/DOWN = history   Tab = autocomplete   Ctrl+L = clear','c-dim');
+  p('');
+}
+
+function runCmd(raw){
+  var cmd=raw.trim();if(!cmd)return;
+  if(hist[0]!==cmd)hist.unshift(cmd);if(hist.length>300)hist.pop();histIdx=-1;
+  pCmd(cmd);
+  if(cmd==='clear'){clearOutput();return;}
+  if(cmd==='help'){printHelp();p('');return;}
+  var rk=Object.keys(RESP).find(function(k){return cmd===k||cmd.startsWith(k);});
+  if(rk) p(RESP[rk][0],RESP[rk][1]);
+  var ck=Object.keys(CTXFB).find(function(k){return cmd.includes(k);});
+  if(ck){var t=CTXFB[ck];p(t,t.indexOf('Warning')===0?'c-warn':'c-ok');}
+  else if(!rk){
+    var ok=['mkdir','touch','echo','cat','chmod','chown','cp','mv','rm','mount','umount','nmcli','hostnamectl','find','tar','df','free','uptime','ps','visudo','crontab','at ','ausearch','audit2allow','semodule','sed','awk','grep','curl','ping','ssh','subscription-manager','printf','systemctl','dnf','podman','loginctl'];
+    if(ok.some(function(x){return cmd.startsWith(x);})){p('(simulated) Command accepted. Would run on RHEL 9.','c-dim');}
+    else{p('bash: '+cmd.split(' ')[0]+': command not found','c-err');}
+  }
+  if(mode==='drill'&&cur) checkAnswer(cmd);
+  p('');
+}
+function printHelp(){
+  p('--- Recognized Commands ---','c-sep');
+  ['getenforce setenforce sestatus','semanage fcontext / semanage port / setsebool / restorecon / ausearch','exportfs / showmount / firewall-cmd','podman ps/images/run/stop/rm/exec/logs/build/generate/save/load','systemctl / journalctl / loginctl enable-linger','pvcreate / vgcreate / lvcreate / lvextend / mkfs.xfs / xfs_growfs / pvs vgs lvs','useradd / usermod / groupadd / chage / chpasswd / id / visudo -c','dnf / hostnamectl / nmcli / free / uptime / df / atq','clear  = clear terminal'].forEach(function(l){p('  '+l,'c-ok');});
+}
+
+function showTab(t){
+  document.querySelectorAll('.stab').forEach(function(x){x.classList.remove('active');});
+  document.getElementById('stab-'+t).classList.add('active');
+  // show/hide main panels
+  document.getElementById('panel-free').style.display=(t==='cheat'||t==='drills')?'flex':'none';
+  document.getElementById('panel-practice').style.display=t==='practice'?'flex':'none';
+  document.getElementById('panel-mocktracker').style.display=t==='exam'?'flex':'none';
+  var sc=document.getElementById('sidebar-content');sc.innerHTML='';
+  if(t==='cheat'){
+    CHEAT.forEach(function(grp){
+      var gd=document.createElement('div');gd.className='cmd-group';
+      var gt=document.createElement('div');gt.className='cmd-group-title';gt.textContent=grp.g;gd.appendChild(gt);
+      grp.c.forEach(function(item){
+        var el=document.createElement('div');el.className='cmd-item';
+        el.innerHTML='<span class="cmd-text">'+xe(item.cmd)+'</span><span class="cmd-desc">'+xe(item.d)+'</span>';
+        el.onclick=function(){document.getElementById('cmd-input').value=item.cmd;document.getElementById('cmd-input').focus();};
+        gd.appendChild(el);
+      });
+      sc.appendChild(gd);
+    });
+  } else if(t==='drills'){
+    var cats=[...new Set(DRILLS.map(function(d){return d.cat;}))];
+    cats.forEach(function(cat){
+      var gd=document.createElement('div');gd.className='cmd-group';
+      var gt=document.createElement('div');gt.className='cmd-group-title';gt.textContent=cat;gd.appendChild(gt);
+      DRILLS.filter(function(d){return d.cat===cat;}).forEach(function(d){
+        var el=document.createElement('div');el.className='cmd-item';
+        el.innerHTML='<span class="cmd-text" style="color:#ffd700">'+xe(d.task)+'</span>';
+        el.onclick=function(){setDrill(d);setMode('drill');};
+        gd.appendChild(el);
+      });
+      sc.appendChild(gd);
+    });
+  } else if(t==='practice'){
+    renderPexSidebar();
+  } else if(t==='tools'){
+    tw.style.display=''; ew.classList.remove('visible');
+    renderToolsSidebar();
+    return;
+  } else if(t==='exam'){
+    // small info blurb in sidebar for tracker
+    var info=document.createElement('div');
+    info.style.cssText='padding:8px 4px;font-size:10px;color:#666;line-height:1.8';
+    info.innerHTML='<div style="color:#e94560;font-weight:bold;font-size:10px;text-transform:uppercase;margin-bottom:6px">Exam Tracker</div>'+
+      '<div>Use on your real RHEL 9 VM</div><div>Mark tasks as you complete them</div>'+
+      '<div style="margin-top:6px;color:#444">18 tasks | 300 pts<br>Pass = 210 (70%)<br>Time = 3 hours</div>';
+    sc.appendChild(info);
+    mtRenderBody();
+  }
+}
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('btn-'+m).classList.add('active');
+  var pn=document.getElementById('drill-panel');
+  if(m==='drill'){pn.classList.add('visible');if(!cur)nextDrill();}
+  else{pn.classList.remove('visible');cur=null;document.getElementById('drill-feedback').textContent='';}
+}
+function shuffleDrills(){drillQ=[].concat(DRILLS).sort(function(){return Math.random()-0.5;});nextDrill();}
+function nextDrill(){if(drillQ.length===0)drillQ=[].concat(DRILLS).sort(function(){return Math.random()-0.5;});setDrill(drillQ.pop());}
+function setDrill(d){cur=d;document.getElementById('drill-task').innerHTML='<span style="color:#e94560;font-size:10px">['+d.cat+']</span> <strong>'+xe(d.task)+'</strong>';document.getElementById('drill-feedback').textContent='';document.getElementById('drill-hint').textContent='Show hint';document.getElementById('cmd-input').focus();}
+function skipDrill(){document.getElementById('drill-feedback').innerHTML='<span class="fb-bad">Skipped. Answer: </span><span style="color:#7ec8e3">'+xe(cur.answer)+'</span>';sBAD++;updateScore();setTimeout(nextDrill,3000);}
+function showHint(){document.getElementById('drill-hint').textContent='Hint: '+cur.hint;}
+function checkAnswer(typed){
+  if(!cur)return;
+  var norm=function(s){return s.trim().replace(/\s+/g,' ');};
+  var fb=document.getElementById('drill-feedback');
+  if(norm(typed)===norm(cur.answer)){fb.innerHTML='<span class="fb-ok">CORRECT!</span>';sOK++;updateScore();setTimeout(nextDrill,1800);}
+  else{fb.innerHTML='<span class="fb-bad">Not quite. Expected: </span><span style="color:#7ec8e3">'+xe(cur.answer)+'</span>';if(norm(typed).split(' ')[0]!==norm(cur.answer).split(' ')[0]){sBAD++;updateScore();}}
+}
+function updateScore(){document.getElementById('sOK').textContent=sOK;document.getElementById('sBAD').textContent=sBAD;}
+
+document.getElementById('cmd-input').addEventListener('keydown',function(ev){
+  if(ev.key==='Enter'){var v=this.value;this.value='';runCmd(v);}
+  else if(ev.key==='ArrowUp'){ev.preventDefault();if(histIdx<hist.length-1){histIdx++;this.value=hist[histIdx];}}
+  else if(ev.key==='ArrowDown'){ev.preventDefault();if(histIdx>0){histIdx--;this.value=hist[histIdx];}else{histIdx=-1;this.value='';}}
+  else if(ev.key==='Tab'){ev.preventDefault();var pt=this.value.trim();if(!pt)return;var all=CHEAT.reduce(function(a,g){return a.concat(g.c.map(function(c){return c.cmd;}));},[]);var m=all.find(function(c){return c.startsWith(pt)&&c!==pt;});if(m)this.value=m;}
+  else if(ev.key==='l'&&ev.ctrlKey){ev.preventDefault();clearOutput();}
+});
+
+window.onload=function(){
+  welcome();
+  showTab('cheat');
+  document.getElementById('cmd-input').focus();
+  drillQ=[].concat(DRILLS).sort(function(){return Math.random()-0.5;});
+  // pre-load first practice task without starting
+  pexLoadTask(0);
+};
+</script>
+</body>
+</html>
