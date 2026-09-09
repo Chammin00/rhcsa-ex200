@@ -890,7 +890,43 @@ var CHEAT=[
    DRILLS
    ============================================================ */
 var DRILLS=[
-    {cat:"SSH",task:"Enable AND start sshd in one command",answer:"systemctl enable --now sshd",hint:"systemctl enable --now sshd"},
+      {cat:"find",task:"Find all .conf files under /etc",answer:"find /etc -name '*.conf'",hint:"find /etc -name '*.conf'"},
+  {cat:"find",task:"Find files modified in the last 7 days under /var",answer:"find /var -mtime -7 -type f",hint:"find /var -mtime -7 -type f"},
+  {cat:"find",task:"Find files larger than 100MB on the system",answer:"find / -type f -size +100M 2>/dev/null",hint:"find / -type f -size +100M 2>/dev/null"},
+  {cat:"find",task:"Find all files owned by alice",answer:"find / -user alice -type f 2>/dev/null",hint:"find / -user alice -type f 2>/dev/null"},
+  {cat:"find",task:"Find all SUID files on the system",answer:"find / -perm -4000 -type f 2>/dev/null",hint:"find / -perm -4000 -type f 2>/dev/null"},
+  {cat:"find",task:"Find world-writable files on the system",answer:"find / -perm -o+w -type f 2>/dev/null",hint:"find / -perm -o+w -type f 2>/dev/null"},
+  {cat:"find",task:"Find all empty directories under /tmp",answer:"find /tmp -type d -empty",hint:"find /tmp -type d -empty"},
+  {cat:"find",task:"Delete log files older than 30 days in /var/log",answer:"find /var/log -name '*.log' -mtime +30 -delete",hint:"find /var/log -name '*.log' -mtime +30 -delete"},
+  {cat:"find",task:"Find .sh files and make them executable with -exec",answer:"find /scripts -name '*.sh' -exec chmod +x {} \\;",hint:"find /scripts -name '*.sh' -exec chmod +x {} \\;"},
+  {cat:"find",task:"Find files with no owner (orphaned files)",answer:"find / -nouser 2>/dev/null",hint:"find / -nouser 2>/dev/null"},
+  {cat:"find",task:"Find files newer than /etc/passwd in /etc",answer:"find /etc -newer /etc/passwd",hint:"find /etc -newer /etc/passwd"},
+  {cat:"find",task:"Find regular files in /etc NOT ending in .conf",answer:"find /etc -type f -not -name '*.conf'",hint:"find /etc -type f -not -name '*.conf'"},
+  {cat:"grep",task:"Search case-insensitively for error in /var/log/messages",answer:"grep -i 'error' /var/log/messages",hint:"grep -i 'error' /var/log/messages"},
+  {cat:"grep",task:"Show active (non-comment, non-blank) lines in sshd_config",answer:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'",hint:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'"},
+  {cat:"grep",task:"Show line numbers where Port appears in sshd_config",answer:"grep -n 'Port' /etc/ssh/sshd_config",hint:"grep -n 'Port' /etc/ssh/sshd_config"},
+  {cat:"grep",task:"Count how many lines contain error in /var/log/messages",answer:"grep -c 'error' /var/log/messages",hint:"grep -c 'error' /var/log/messages"},
+  {cat:"grep",task:"List only filenames containing password in /etc/*.conf",answer:"grep -l 'password' /etc/*.conf",hint:"grep -l 'password' /etc/*.conf"},
+  {cat:"grep",task:"Recursively find PermitRootLogin in /etc/ssh with line numbers",answer:"grep -rn 'PermitRootLogin' /etc/ssh/",hint:"grep -rn 'PermitRootLogin' /etc/ssh/"},
+  {cat:"grep",task:"Show 3 lines after each FAILED match in /var/log/secure",answer:"grep -A 3 'FAILED' /var/log/secure",hint:"grep -A 3 'FAILED' /var/log/secure"},
+  {cat:"grep",task:"Match lines starting with root in /etc/passwd",answer:"grep '^root' /etc/passwd",hint:"grep '^root' /etc/passwd"},
+  {cat:"grep",task:"Match lines ending with /bin/bash in /etc/passwd",answer:"grep '/bin/bash$' /etc/passwd",hint:"grep '/bin/bash$' /etc/passwd"},
+  {cat:"grep",task:"Filter output: show only lines with error OR fail (extended regex)",answer:"grep -E 'error|fail' /var/log/messages",hint:"grep -E 'error|fail' /var/log/messages"},
+  {cat:"Scripting",task:"Write the correct shebang line for a bash script",answer:"#!/bin/bash",hint:"#!/bin/bash"},
+  {cat:"Scripting",task:"Syntax-check a script file without running it",answer:"bash -n myscript.sh",hint:"bash -n myscript.sh"},
+  {cat:"Scripting",task:"Run a script in debug trace mode",answer:"bash -x myscript.sh",hint:"bash -x myscript.sh"},
+  {cat:"Scripting",task:"Capture hostname output into a variable called HOST",answer:"HOST=$(hostname)",hint:"HOST=$(hostname)"},
+  {cat:"Scripting",task:"Test if /etc/passwd exists as a regular file",answer:"[ -f /etc/passwd ] && echo yes",hint:"[ -f /etc/passwd ] && echo yes"},
+  {cat:"Scripting",task:"Test if a variable VAR is empty",answer:'[ -z "$VAR" ]',hint:'[ -z "$VAR" ]'},
+  {cat:"Scripting",task:"For loop: print numbers 1 through 10 using brace expansion",answer:"for i in {1..10}; do echo $i; done",hint:"for i in {1..10}; do echo $i; done"},
+  {cat:"Scripting",task:"Read a file line by line with a while loop",answer:'while IFS= read -r LINE; do echo "$LINE"; done < file.txt',hint:'while IFS= read -r LINE; do echo "$LINE"; done < file.txt'},
+  {cat:"Scripting",task:"Provision users from a CSV (user,group,pass) with while loop",answer:'while IFS=, read -r U G P; do useradd -G $G $U; echo "$P" | passwd --stdin $U; done < users.csv',hint:"while IFS=, read -r U G P; do ..."},
+  {cat:"Scripting",task:"Print the exit code of the last command",answer:"echo $?",hint:"echo $?"},
+  {cat:"Scripting",task:"Get basename from path in VAR (strip leading directories)",answer:'${VAR##*/}',hint:'${VAR##*/}'},
+  {cat:"Scripting",task:"Strip file extension from VAR (file.txt becomes file)",answer:'${VAR%.*}',hint:'${VAR%.*}'},
+  {cat:"Scripting",task:"Enforce root: exit with error if not running as root",answer:"[ $(id -u) -ne 0 ] && echo 'Must be root' && exit 1",hint:"[ $(id -u) -ne 0 ] && echo 'Must be root' && exit 1"},
+
+  {cat:"SSH",task:"Enable AND start sshd in one command",answer:"systemctl enable --now sshd",hint:"systemctl enable --now sshd"},
   {cat:"SSH",task:"Restart the SSH daemon",answer:"systemctl restart sshd",hint:"systemctl restart sshd"},
   {cat:"SSH",task:"Test sshd_config syntax without restarting",answer:"sshd -t",hint:"sshd -t"},
   {cat:"SSH",task:"Generate a 4096-bit RSA SSH key pair",answer:"ssh-keygen -t rsa -b 4096",hint:"ssh-keygen -t rsa -b 4096"},
@@ -1294,9 +1330,248 @@ var TOOLS=[
   ]},
 ];
 
-function renderToolsSidebar(){
+
+/* ============================================================
+   DEEP DIVE DATA — find / grep / scripting
+   ============================================================ */
+var FIND_GUIDE=[
+  {section:"Basic Syntax",items:[
+    {cmd:"find [PATH] [OPTIONS] [EXPRESSION]",d:"General form"},
+    {cmd:"find . -name 'report.txt'",d:"Find in current dir and below"},
+    {cmd:"find / -name 'sshd_config'",d:"Find anywhere on the system"},
+    {cmd:"find /etc /var -name '*.conf'",d:"Search multiple paths"},
+  ]},
+  {section:"By Name",items:[
+    {cmd:"find /etc -name '*.conf'",d:"Match exact pattern (case-sensitive)"},
+    {cmd:"find /home -iname '*.txt'",d:"-iname = case-insensitive"},
+    {cmd:"find /var -name 'messages*'",d:"Wildcard: starts with messages"},
+    {cmd:"find / -name '*.sh' -type f",d:"Shell scripts (files only)"},
+    {cmd:"find /etc -not -name '*.conf'",d:"Files NOT ending in .conf"},
+  ]},
+  {section:"By Type",items:[
+    {cmd:"find /etc -type f",d:"Regular files only"},
+    {cmd:"find /var -type d",d:"Directories only"},
+    {cmd:"find /usr -type l",d:"Symbolic links only"},
+    {cmd:"find /tmp -type d -empty",d:"Empty directories"},
+    {cmd:"find / -type f -empty",d:"Empty files"},
+  ]},
+  {section:"By Size",items:[
+    {cmd:"find / -type f -size +100M",d:"Files larger than 100 MB"},
+    {cmd:"find / -type f -size -1k",d:"Files smaller than 1 KB"},
+    {cmd:"find /var/log -size +50M",d:"Log files over 50 MB"},
+    {cmd:"find / -type f -size +1G 2>/dev/null",d:"Files over 1 GB"},
+  ]},
+  {section:"By Time (days)",items:[
+    {cmd:"find /etc -mtime -7",d:"Modified in last 7 days"},
+    {cmd:"find /var/log -mtime +30",d:"Modified MORE than 30 days ago"},
+    {cmd:"find /tmp -atime +3",d:"Not accessed in 3+ days"},
+    {cmd:"find /etc -newer /etc/passwd",d:"Newer than a reference file"},
+    {cmd:"find /home -ctime -1",d:"Status changed in last 24 hours"},
+  ]},
+  {section:"By Owner and Permissions",items:[
+    {cmd:"find /home -user alice",d:"Files owned by alice"},
+    {cmd:"find /var -group developers",d:"Files owned by group developers"},
+    {cmd:"find / -nouser 2>/dev/null",d:"Files with no owner (orphaned)"},
+    {cmd:"find / -nogroup 2>/dev/null",d:"Files with no group"},
+    {cmd:"find / -perm -4000 2>/dev/null",d:"Files with SUID bit set"},
+    {cmd:"find / -perm -2000 2>/dev/null",d:"Files with SGID bit set"},
+    {cmd:"find / -perm -o+w 2>/dev/null",d:"World-writable files"},
+    {cmd:"find /etc -perm 644",d:"Files with exact perms 644"},
+  ]},
+  {section:"Actions on Results",items:[
+    {cmd:"find /tmp -name '*.tmp' -delete",d:"Delete matching files"},
+    {cmd:"find /var/log -name '*.log' -mtime +30 -exec rm {} \\;",d:"Delete old logs one by one"},
+    {cmd:"find /home -type f -exec chmod 644 {} \\;",d:"chmod every file found"},
+    {cmd:"find /scripts -name '*.sh' -exec chmod +x {} \\;",d:"Make all scripts executable"},
+    {cmd:"find /etc -name '*.conf' -exec grep -l 'password' {} \\;",d:"Configs containing password"},
+    {cmd:"find / -nouser -exec chown root {} \\;",d:"Fix orphaned files"},
+    {cmd:"find /var/log -name '*.log' -ls",d:"-ls shows detailed listing"},
+    {cmd:"find /home -type f | wc -l",d:"Count matching files"},
+  ]},
+  {section:"Combining Conditions",items:[
+    {cmd:"find /var/log -name '*.log' -size +10M -mtime +7",d:"AND: both must match"},
+    {cmd:"find /etc -name '*.conf' -o -name '*.cfg'",d:"OR: either condition"},
+    {cmd:"find / -perm -4000 -type f -not -user root",d:"SUID files NOT owned by root"},
+    {cmd:"find /tmp -maxdepth 1 -mtime +7",d:"maxdepth 1 = top level only"},
+    {cmd:"find /etc -mindepth 2 -name '*.conf'",d:"mindepth 2 = skip top level"},
+  ]},
+  {section:"RHCSA Exam Patterns",items:[
+    {cmd:"find / -user alice -type f 2>/dev/null > /tmp/alice_files.txt",d:"Save file list for user"},
+    {cmd:"find / -size +50M -type f -exec ls -lh {} \\; 2>/dev/null",d:"List large files with sizes"},
+    {cmd:"find / -perm -4000 -type f 2>/dev/null",d:"Security: find all SUID files"},
+    {cmd:"find /var/log -name '*.log' -mtime +7 -exec gzip {} \\;",d:"Compress old logs"},
+    {cmd:"find /etc -type f -newer /etc/redhat-release | sort",d:"Files changed since install"},
+  ]},
+];
+
+var GREP_GUIDE=[
+  {section:"Basic Syntax",items:[
+    {cmd:"grep 'pattern' filename",d:"Basic search in a file"},
+    {cmd:"grep 'pattern' file1 file2",d:"Search multiple files"},
+    {cmd:"grep 'pattern' /etc/*.conf",d:"Search with glob"},
+    {cmd:"command | grep 'pattern'",d:"Filter pipeline output"},
+  ]},
+  {section:"Common Flags",items:[
+    {cmd:"grep -i 'error' /var/log/messages",d:"-i  ignore case"},
+    {cmd:"grep -v '^#' /etc/ssh/sshd_config",d:"-v  invert (lines NOT matching)"},
+    {cmd:"grep -n 'Port' /etc/ssh/sshd_config",d:"-n  show line numbers"},
+    {cmd:"grep -c 'error' /var/log/messages",d:"-c  count matching lines"},
+    {cmd:"grep -l 'password' /etc/*.conf",d:"-l  list filenames only"},
+    {cmd:"grep -L 'password' /etc/*.conf",d:"-L  files that do NOT match"},
+    {cmd:"grep -w 'root' /etc/passwd",d:"-w  whole word match"},
+    {cmd:"grep -q 'pattern' file && echo found",d:"-q  quiet, just return exit code"},
+    {cmd:"grep -m 5 'error' /var/log/messages",d:"-m  stop after 5 matches"},
+  ]},
+  {section:"Recursive Search",items:[
+    {cmd:"grep -r 'password' /etc/",d:"-r  recursive"},
+    {cmd:"grep -rl 'PermitRoot' /etc/",d:"Recursive, list files only"},
+    {cmd:"grep -rn 'error' /var/log/ --include='*.log'",d:"Recursive in .log files only"},
+    {cmd:"grep -r 'pattern' /etc/ --exclude='*.bak'",d:"Recursive, exclude backups"},
+  ]},
+  {section:"Context Lines",items:[
+    {cmd:"grep -A 3 'error' /var/log/messages",d:"-A 3  show 3 lines AFTER match"},
+    {cmd:"grep -B 3 'error' /var/log/messages",d:"-B 3  show 3 lines BEFORE match"},
+    {cmd:"grep -C 3 'error' /var/log/messages",d:"-C 3  show 3 lines either side"},
+  ]},
+  {section:"Regular Expressions (anchors)",items:[
+    {cmd:"grep '^root' /etc/passwd",d:"^ = starts with root"},
+    {cmd:"grep 'bash$' /etc/passwd",d:"$ = ends with bash"},
+    {cmd:"grep '^$' file",d:"Match empty lines"},
+    {cmd:"grep '^[^#]' /etc/ssh/sshd_config",d:"Lines not starting with #"},
+    {cmd:"grep -v '^#\\|^$' /etc/ssh/sshd_config",d:"Remove comments AND blank lines"},
+  ]},
+  {section:"Extended Regex (-E)",items:[
+    {cmd:"grep -E 'cat|dog' file",d:"Match cat OR dog"},
+    {cmd:"grep -E 'colou?r' file",d:"? = zero or one"},
+    {cmd:"grep -E 'go+' file",d:"+ = one or more"},
+    {cmd:"grep -E '^(Alice|Bob) ' roster.txt",d:"Line starts with Alice or Bob"},
+    {cmd:"grep -E '(error|fail|critical)' /var/log/messages",d:"Multi-keyword log search"},
+    {cmd:"grep -E '[0-9]{1,3}\\.[0-9]{1,3}' file",d:"Rough IP address match"},
+  ]},
+  {section:"RHCSA Exam Patterns",items:[
+    {cmd:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'",d:"Active sshd settings"},
+    {cmd:"grep -v '^#' /etc/fstab | grep -v '^$'",d:"Active fstab mounts"},
+    {cmd:"grep '^alice:' /etc/passwd",d:"Verify user alice exists"},
+    {cmd:"grep 'alice' /etc/group",d:"Find alice group memberships"},
+    {cmd:"grep -i 'failed\\|error\\|denied' /var/log/secure",d:"Auth failures"},
+    {cmd:"grep -rn 'PermitRootLogin' /etc/ssh/",d:"Find SSH root login setting"},
+    {cmd:"journalctl | grep -i 'error\\|fail' | tail -20",d:"Recent journal errors"},
+  ]},
+];
+
+var SCRIPT_GUIDE=[
+  {section:"Script Skeleton",items:[
+    {cmd:"#!/bin/bash",d:"ALWAYS first line — specifies interpreter"},
+    {cmd:"# Description: purpose, author, date",d:"Comment block at top"},
+    {cmd:"set -euo pipefail",d:"Strict mode: exit on error / unset var / pipe fail"},
+    {cmd:"chmod +x /usr/local/bin/myscript.sh",d:"Make executable"},
+    {cmd:"bash -n myscript.sh",d:"Syntax check without running"},
+    {cmd:"bash -x myscript.sh",d:"Debug mode — trace each command"},
+  ]},
+  {section:"Variables",items:[
+    {cmd:"NAME='Alice'",d:"Assign variable (no spaces around =)"},
+    {cmd:"echo ${NAME}",d:"Use variable (braces safer)"},
+    {cmd:"RESULT=$(hostname)",d:"Capture command output"},
+    {cmd:"COUNT=$(wc -l < /etc/passwd)",d:"Capture numeric output"},
+    {cmd:"DATE=$(date '+%Y-%m-%d')",d:"Formatted date string"},
+    {cmd:"readonly MAX=100",d:"Constant — cannot be changed"},
+  ]},
+  {section:"Arguments and Input",items:[
+    {cmd:"$0  $1  $2  $#  $@",d:"Script name, args 1/2, arg count, all args"},
+    {cmd:"if [ $# -lt 2 ]; then echo 'Usage: $0 u g'; exit 1; fi",d:"Require 2 arguments"},
+    {cmd:"read -p 'Enter username: ' USERNAME",d:"Interactive prompt"},
+    {cmd:"read -rsp 'Password: ' PASS",d:"-s = silent (no echo)"},
+    {cmd:"while IFS=, read -r USER GROUP PASS; do echo $USER; done < users.csv",d:"Read CSV line by line"},
+  ]},
+  {section:"if / elif / else",items:[
+    {cmd:"if [ condition ]; then ... elif [ c ]; then ... else ... fi",d:"Full if structure"},
+    {cmd:"if [ -f /etc/passwd ]; then echo 'exists'; fi",d:"Test file exists"},
+    {cmd:"if [ -z \"$VAR\" ]; then echo 'empty'; fi",d:"-z = string is empty"},
+    {cmd:"if [ -n \"$VAR\" ]; then echo 'set'; fi",d:"-n = string is not empty"},
+    {cmd:"if [ \"$USER\" = 'root' ]; then ...; fi",d:"String equality"},
+    {cmd:"if [ $COUNT -gt 10 ]; then ...; fi",d:"Numeric: -gt -lt -ge -le -eq -ne"},
+    {cmd:"if [ $A -eq 1 ] || [ $A -eq 2 ]; then ...; fi",d:"OR condition"},
+  ]},
+  {section:"File Test Operators",items:[
+    {cmd:"[ -f file ]",d:"-f  file exists and is regular file"},
+    {cmd:"[ -d dir ]",d:"-d  directory exists"},
+    {cmd:"[ -e path ]",d:"-e  exists (any type)"},
+    {cmd:"[ -r file ]",d:"-r  readable by current user"},
+    {cmd:"[ -w file ]",d:"-w  writable by current user"},
+    {cmd:"[ -x file ]",d:"-x  executable"},
+    {cmd:"[ -s file ]",d:"-s  exists and NOT empty"},
+    {cmd:"[ -L link ]",d:"-L  symbolic link"},
+    {cmd:"[ f1 -nt f2 ]",d:"-nt  file1 is newer than file2"},
+  ]},
+  {section:"for loops",items:[
+    {cmd:"for i in 1 2 3; do echo $i; done",d:"Simple list loop"},
+    {cmd:"for i in {1..10}; do echo $i; done",d:"Brace expansion 1 to 10"},
+    {cmd:"for USER in alice bob carol; do useradd $USER; done",d:"Loop over list"},
+    {cmd:"for FILE in /etc/*.conf; do echo $FILE; done",d:"Loop over glob pattern"},
+    {cmd:"for i in $(cat userlist.txt); do echo $i; done",d:"Loop over file contents"},
+  ]},
+  {section:"while loops",items:[
+    {cmd:"while [ condition ]; do ...; done",d:"While condition is true"},
+    {cmd:"while IFS= read -r LINE; do echo \"$LINE\"; done < file.txt",d:"Read file line by line (safest)"},
+    {cmd:"while IFS=, read -r U G P; do useradd -G $G $U; echo \"$P\" | passwd --stdin $U; done < users.csv",d:"Provision users from CSV"},
+    {cmd:"COUNT=0; while [ $COUNT -lt 5 ]; do echo $COUNT; ((COUNT++)); done",d:"Counter loop"},
+  ]},
+  {section:"Functions",items:[
+    {cmd:"function log_msg { echo \"$(date '+%F %T') - $1\" >> /var/log/script.log; }",d:"Logging function"},
+    {cmd:"log_msg 'Started backup'",d:"Call the function"},
+    {cmd:"check_root() { [ $(id -u) -ne 0 ] && echo 'Need root' && exit 1; }",d:"Root check function"},
+    {cmd:"return 0",d:"Return success from function"},
+    {cmd:"return 1",d:"Return failure from function"},
+  ]},
+  {section:"Exit Codes and Error Handling",items:[
+    {cmd:"echo $?",d:"Exit code of last command (0=success)"},
+    {cmd:"command || { echo 'failed'; exit 1; }",d:"Bail on command failure"},
+    {cmd:"command && echo 'OK' || echo 'FAIL'",d:"Success/fail message"},
+    {cmd:"trap 'echo Interrupted; exit 1' SIGINT SIGTERM",d:"Cleanup on Ctrl-C"},
+    {cmd:"exit 0",d:"Exit script successfully"},
+    {cmd:"exit 1",d:"Exit with error code"},
+  ]},
+  {section:"String Operations",items:[
+    {cmd:"${#VAR}",d:"Length of string"},
+    {cmd:"${VAR:0:5}",d:"Substring: chars 0 to 4"},
+    {cmd:"${VAR,,}",d:"Lowercase the string"},
+    {cmd:"${VAR^^}",d:"Uppercase the string"},
+    {cmd:"${VAR/old/new}",d:"Replace first occurrence"},
+    {cmd:"${VAR//old/new}",d:"Replace ALL occurrences"},
+    {cmd:"${VAR:-default}",d:"Use default if VAR is unset or empty"},
+    {cmd:"${VAR##*/}",d:"Basename: /path/to/file -> file"},
+    {cmd:"${VAR%.*}",d:"Strip extension: file.txt -> file"},
+  ]},
+  {section:"RHCSA Exam Script Patterns",items:[
+    {cmd:"[ $(id -u) -ne 0 ] && echo 'Must be root' && exit 1",d:"Enforce root execution"},
+    {cmd:"while IFS=, read -r U P G; do useradd -G $G $U; echo \"$P\" | passwd --stdin $U; done < /tmp/users.csv",d:"Bulk user provisioning from CSV"},
+    {cmd:"df -h && free -m && uptime && systemctl --failed",d:"System health one-liner"},
+    {cmd:"find /home -type f -name '*.sh' -exec chmod +x {} \\;",d:"Make all user scripts executable"},
+    {cmd:"tar -czf /backup/etc_$(date +%Y%m%d).tar.gz /etc && echo OK >> $LOG || echo FAIL >> $LOG",d:"Backup with logging"},
+    {cmd:"for U in $(awk -F: '$3>=1000{print $1}' /etc/passwd); do echo \"$U: $(id $U)\"; done",d:"List all regular users"},
+  ]},
+];
+
+
+function renderToolsSidebar(mode){
+  mode=mode||'tools';
   var sc=document.getElementById('sidebar-content');
   sc.innerHTML='';
+
+  var _nav=document.createElement('div');
+  _nav.style.cssText='display:flex;gap:3px;margin-bottom:8px;flex-wrap:wrap';
+  [['tools','All Tools'],['find','find'],['grep','grep'],['scripting','Scripting']].forEach(function(pair){
+    var _b=document.createElement('button');
+    _b.textContent=pair[1];
+    _b.style.cssText='flex:1;padding:3px 2px;background:'+(mode===pair[0]?'#0f3460':'#111')+';border:1px solid '+(mode===pair[0]?'#00d4aa':'#222')+';color:'+(mode===pair[0]?'#00d4aa':'#888')+';border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit';
+    _b.onclick=(function(m){return function(){renderToolsSidebar(m);};})(pair[0]);
+    _nav.appendChild(_b);
+  });
+  sc.appendChild(_nav);
+  if(mode==='find'){renderGuide(FIND_GUIDE,sc);return;}
+  if(mode==='grep'){renderGuide(GREP_GUIDE,sc);return;}
+  if(mode==='scripting'){renderGuide(SCRIPT_GUIDE,sc);return;}
+
   TOOLS.forEach(function(section){
     var catDiv=document.createElement('div');
     catDiv.innerHTML='<div class="tool-cat">'+xe(section.cat)+'</div>';
@@ -1319,6 +1594,25 @@ function renderToolsSidebar(){
       catDiv.appendChild(wrap);
     });
     sc.appendChild(catDiv);
+  });
+}
+
+
+function renderGuide(guide,sc){
+  guide.forEach(function(section){
+    var hdr=document.createElement('div');
+    hdr.className='tool-cat';
+    hdr.textContent=section.section;
+    sc.appendChild(hdr);
+    section.items.forEach(function(item){
+      var row=document.createElement('div');
+      row.className='tool-pattern';
+      row.style.marginBottom='3px';
+      row.onclick=function(){pasteTool(item.cmd.split('\n')[0]);};
+      row.innerHTML='<span class="tp-cmd">$ '+xe(item.cmd)+'</span>'
+        +'<span class="tp-desc">'+xe(item.d)+'</span>';
+      sc.appendChild(row);
+    });
   });
 }
 
