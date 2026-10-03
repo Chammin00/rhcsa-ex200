@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <title>RHCSA EX200 - Terminal Practice</title>
+<script src="cosmic-background.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d0d0d;color:#f0f0f0;font-family:'Courier New',monospace;font-size:14px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-#topbar{background:#1a1a2e;border-bottom:2px solid #e94560;padding:6px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;font-size:14px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+#topbar{background:rgba(26,26,46,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e94560;padding:6px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
 #topbar h1{color:#e94560;font-size:14px;white-space:nowrap}
 .spacer{flex:1}
 #score-box{background:#0f3460;border-radius:5px;padding:3px 10px;font-size:11px;color:#00d4aa;white-space:nowrap}
@@ -15,7 +16,7 @@ body{background:#0d0d0d;color:#f0f0f0;font-family:'Courier New',monospace;font-s
 .mode-btn.active{background:#e94560;border-color:#e94560;color:#fff}
 #main{display:flex;flex:1;overflow:hidden}
 /* SIDEBAR */
-#sidebar{width:260px;background:#111;border-right:1px solid #222;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#sidebar{width:260px;background:rgba(17,17,17,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-right:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
 #sidebar-tabs{display:flex;border-bottom:1px solid #222;flex-shrink:0}
 .stab{flex:1;text-align:center;padding:6px 2px;cursor:pointer;font-size:10px;color:#666;border-bottom:2px solid transparent}
 .stab.active{color:#00d4aa;border-bottom-color:#00d4aa}
@@ -262,7 +263,13 @@ body{background:#0d0d0d;color:#f0f0f0;font-family:'Courier New',monospace;font-s
     <div id="mt-header">
       <div>
         <h2>RHCSA EX200 Mock Exam Tracker</h2>
-        <div id="mt-info" style="font-size:10px;margin-top:2px;color:#555">18 tasks | 300 pts | Pass = 210</div>
+        <div id="mt-info" style="font-size:10px;margin-top:2px;color:#555">22 tasks | 300 pts | Pass = 210</div>
+      </div>
+      <div>
+        <select id="mt-exam-selector" onchange="switchExam(this.value)" style="background:#161b22;color:#58a6ff;border:1px solid #30363d;border-radius:4px;padding:4px 8px;font-size:11px;font-family:inherit;cursor:pointer">
+          <option value="v10" selected>codeXchange V10 (22 Tasks)</option>
+          <option value="classic">Standard Mock (18 Tasks)</option>
+        </select>
       </div>
       <div id="mt-timer">3:00:00</div>
       <div id="mt-score">Score: <span id="mt-pts">0</span>/300</div>
@@ -278,7 +285,7 @@ body{background:#0d0d0d;color:#f0f0f0;font-family:'Courier New',monospace;font-s
 /* ============================================================
    EXAM TASKS
    ============================================================ */
-var EXAM_TASKS=[
+var EXAM_TASKS_CLASSIC=[
   {num:1,title:"Configure Networking and Hostname",pts:10,time:"5 min",cat:"Networking",
    desc:"1. Set the system hostname to server1.example.com\n2. Set a static IP 192.168.1.10/24 on the primary interface (ens33)\n3. Default gateway: 192.168.1.1  |  DNS: 8.8.8.8\n4. Confirm connectivity with ping\n\nKEY COMMANDS TO PRACTICE BELOW:",
    keyc:["hostnamectl set-hostname server1.example.com","nmcli con mod ens33 ipv4.method manual ipv4.addresses 192.168.1.10/24 ipv4.gateway 192.168.1.1 ipv4.dns 8.8.8.8 connection.autoconnect yes","nmcli con down ens33 && nmcli con up ens33","hostnamectl","ip addr show ens33"],
@@ -374,6 +381,197 @@ var EXAM_TASKS=[
 /* ============================================================
    PRACTICE EXAM STATE & LOGIC
    ============================================================ */
+/* ============================================================
+   EXAM 2: codeXchange RHCSA V10 COMPLETE EXAM (22 TASKS)
+   Video Reference: https://www.youtube.com/watch?v=kBsMuA-DA9E
+   ============================================================ */
+var EXAM_V10_TASKS=[
+  {
+    num:1,title:"Important Configuration & Pre-flight Connectivity",pts:5,time:"3 min",cat:"Environment",
+    context:"General / Pre-flight",
+    desc:"1. Primary system: node1.domain.example.com (172.25.250.10)\n2. Secondary system: node2.domain.example.com (172.25.250.11)\n3. Gateway: 172.25.250.254  |  Nameserver: 172.25.250.220\n4. Default root password: atenorth\n5. Container registry credentials: admin / admin123\n6. Tasks 1 to 15 are on node1. Tasks 16 to 22 are on node2.\nConfirm network connectivity to gateway and both nodes.",
+    keyc:["ping -c 2 172.25.250.254","ip addr show","hostnamectl"],
+    sol:"# Test connectivity\nping -c 2 172.25.250.254\nping -c 2 172.25.250.11\n\n# Check network interface and route\nip addr show\nip route show"
+  },
+  {
+    num:2,title:"Configure Networking & Hostname (node1)",pts:10,time:"5 min",cat:"Networking",
+    context:"node1.domain.example.com",
+    desc:"Configure the following network settings on primary system:\n- Hostname = primary.net1.example.com\n- IP Address = 172.25.250.11\n- Netmask = 255.255.255.0 (/24)\n- Gateway = 172.25.250.254\n- Nameserver = 172.25.250.220\nSettings must be permanent across reboot.",
+    keyc:["hostnamectl set-hostname primary.net1.example.com","nmcli con mod 'Wired connection 1' ipv4.method manual ipv4.addresses 172.25.250.11/24 ipv4.gateway 172.25.250.254 ipv4.dns 172.25.250.220 connection.autoconnect yes","nmcli con up 'Wired connection 1'","ip addr show"],
+    sol:"# 1. Set hostname\nhostnamectl set-hostname primary.net1.example.com\n\n# 2. Configure network connection with nmcli\nnmcli con mod 'Wired connection 1' \\\n  ipv4.method manual \\\n  ipv4.addresses 172.25.250.11/24 \\\n  ipv4.gateway 172.25.250.254 \\\n  ipv4.dns 172.25.250.220 \\\n  connection.autoconnect yes\n\n# 3. Apply settings\nnmcli con down 'Wired connection 1' && nmcli con up 'Wired connection 1'\n\n# 4. Verify\nhostname\nip addr show\nip route show"
+  },
+  {
+    num:3,title:"Configure Default YUM Repositories (node1)",pts:10,time:"5 min",cat:"Package Management",
+    context:"node1.domain.example.com",
+    desc:"YUM repositories have been made available from:\n- http://content.example.com/rhel10.0/x86_64/dvd/BaseOS\n- http://content.example.com/rhel10.0/x86_64/dvd/AppStream\nConfigure your system to use these locations as default repositories.",
+    keyc:["cat << 'EOF' > /etc/yum.repos.d/default.repo","dnf clean all","dnf repolist"],
+    sol:"cat << 'EOF' > /etc/yum.repos.d/default.repo\n[BaseOS]\nname=BaseOS\nbaseurl=http://content.example.com/rhel10.0/x86_64/dvd/BaseOS\nenabled=1\ngpgcheck=0\n\n[AppStream]\nname=AppStream\nbaseurl=http://content.example.com/rhel10.0/x86_64/dvd/AppStream\nenabled=1\ngpgcheck=0\nEOF\n\n# Verification\ndnf clean all\ndnf repolist"
+  },
+  {
+    num:4,title:"Configure SELinux & Non-Standard HTTP Port (node1)",pts:15,time:"8 min",cat:"SELinux",
+    context:"node1.domain.example.com",
+    desc:"1. The http service should serve non-standard 82 port for your machine.\n2. The system is not able to connect to httpd service at port 82, fix the debug issue.\n3. To store the HTML files under /var/www/html directory don't have change to it.\n4. It should be accessible at port 82 and should start at boot time.\n5. Verify that the page can be accessed locally using: curl http://localhost:82/file1",
+    keyc:["dnf install -y httpd policycoreutils-python-utils","semanage port -a -t http_port_t -p tcp 82","firewall-cmd --permanent --add-port=82/tcp","firewall-cmd --reload","systemctl enable --now httpd","curl http://localhost:82/file1"],
+    sol:"# 1. Install httpd and semanage tools\ndnf install -y httpd policycoreutils-python-utils\n\n# 2. Change Listen port to 82 in httpd.conf\nsed -i 's/^Listen 80/Listen 82/' /etc/httpd/conf/httpd.conf\n\n# 3. Add SELinux port policy\nsemanage port -a -t http_port_t -p tcp 82\n\n# 4. Open firewall\nfirewall-cmd --permanent --add-port=82/tcp\nfirewall-cmd --reload\n\n# 5. Create test file and start service\necho 'RHCSA Port 82 Test' > /var/www/html/file1\nsystemctl enable --now httpd\n\n# 6. Verify\ncurl http://localhost:82/file1"
+  },
+  {
+    num:5,title:"User & Group Management (node1)",pts:10,time:"5 min",cat:"User Management",
+    context:"node1.domain.example.com",
+    desc:"Configure the following:\n- A group named sysadmin\n- A user 'natasha' who belongs to sysadmin as a secondary group.\n- A user 'harry' who belongs to sysadmin as a secondary group.\n- A user 'sarah' who does not have access to an interactive shell & who is not a member of sysadmin\n- All above-mentioned users should have the password of atenorth.",
+    keyc:["groupadd sysadmin","useradd -G sysadmin natasha","useradd -G sysadmin harry","useradd -s /sbin/nologin sarah","echo atenorth | passwd --stdin natasha","echo atenorth | passwd --stdin harry","echo atenorth | passwd --stdin sarah"],
+    sol:"# 1. Create group\ngroupadd sysadmin\n\n# 2. Create users with secondary group\nuseradd -G sysadmin natasha\nuseradd -G sysadmin harry\n\n# 3. Create user without interactive shell\nuseradd -s /sbin/nologin sarah\n\n# 4. Set passwords to atenorth\necho atenorth | passwd --stdin natasha\necho atenorth | passwd --stdin harry\necho atenorth | passwd --stdin sarah\n\n# 5. Verify\nid natasha\nid harry\nid sarah"
+  },
+  {
+    num:6,title:"Collaborative Directory /common/admin (node1)",pts:10,time:"4 min",cat:"Permissions",
+    context:"node1.domain.example.com",
+    desc:"Create a collaborative directory '/common/admin' with the following characteristics:\n- Group ownership of /common/admin is sysadmin.\n- The directory should be readable, writable, and accessible to members of sysadmin, but not to any other user. (Root has full access).\n- Files created in /common/admin automatically have group ownership set to the sysadmin group.",
+    keyc:["mkdir -p /common/admin","chown :sysadmin /common/admin","chmod 2770 /common/admin","ls -ld /common/admin"],
+    sol:"mkdir -p /common/admin\nchown :sysadmin /common/admin\nchmod 2770 /common/admin\n\n# Verify: output must show drwxrws---\nls -ld /common/admin"
+  },
+  {
+    num:7,title:"Configure Cron Jobs (node1)",pts:10,time:"5 min",cat:"Automation",
+    context:"node1.domain.example.com",
+    desc:"a. The user natasha must configure a cron job that runs daily at 14:23 local time and executes /bin/echo hello\nb. The user harry must configure a cron job that runs every 3 minutes and executes /usr/bin/logger with message 'EX200 in progress'",
+    keyc:["crontab -u natasha -e","crontab -u harry -e","crontab -u natasha -l","crontab -u harry -l"],
+    sol:"# natasha's cron (daily at 14:23)\necho '23 14 * * * /bin/echo hello' | crontab -u natasha -\n\n# harry's cron (every 3 minutes)\necho '*/3 * * * * /usr/bin/logger \"EX200 in progress\"' | crontab -u harry -\n\n# Verification\ncrontab -u natasha -l\ncrontab -u harry -l"
+  },
+  {
+    num:8,title:"Create a Backup Archive (node1)",pts:10,time:"3 min",cat:"Essential Tools",
+    context:"node1.domain.example.com",
+    desc:"Create a backup.tar.bz2 of /etc directory in /home location (/home/backup.tar.bz2).",
+    keyc:["tar -cjf /home/backup.tar.bz2 /etc","tar -tvjf /home/backup.tar.bz2","ls -lh /home/backup.tar.bz2"],
+    sol:"tar -cjf /home/backup.tar.bz2 /etc\n\n# Verification\nls -lh /home/backup.tar.bz2\ntar -tvjf /home/backup.tar.bz2 | head -10"
+  },
+  {
+    num:9,title:"Configure NTP Client (node1)",pts:10,time:"4 min",cat:"System Configuration",
+    context:"node1.domain.example.com",
+    desc:"Configure NTP in your system so that it is an NTP client of classroom.example.com. Ensure the chronyd service is active and enabled.",
+    keyc:["echo 'server classroom.example.com iburst' >> /etc/chrony.conf","systemctl restart chronyd","systemctl enable chronyd","chronyc sources -v"],
+    sol:"# 1. Add server to chrony config\necho 'server classroom.example.com iburst' >> /etc/chrony.conf\n\n# 2. Restart and enable chronyd\nsystemctl restart chronyd\nsystemctl enable chronyd\n\n# 3. Verification\nchronyc sources -v"
+  },
+  {
+    num:10,title:"Find and Copy Files (node1)",pts:10,time:"4 min",cat:"Essential Tools",
+    context:"node1.domain.example.com",
+    desc:"Find the files in your system which is owned by Simone user & copy all the files on /root/found directory.",
+    keyc:["mkdir -p /root/found","find / -user simone -type f -exec cp -a {} /root/found/ \\; 2>/dev/null","ls -la /root/found"],
+    sol:"mkdir -p /root/found\nfind / -user simone -type f -exec cp -a {} /root/found/ \\; 2>/dev/null\n\n# Verification\nls -la /root/found"
+  },
+  {
+    num:11,title:"Find String in Dictionary (node1)",pts:5,time:"2 min",cat:"Essential Tools",
+    context:"node1.domain.example.com",
+    desc:"Find the string strato from /usr/share/dict/words and save the result in /searchfile.",
+    keyc:["grep 'strato' /usr/share/dict/words > /searchfile","cat /searchfile"],
+    sol:"grep 'strato' /usr/share/dict/words > /searchfile\n\n# Verification\ncat /searchfile"
+  },
+  {
+    num:12,title:"Configure Autofs NFS Automounting (node1)",pts:15,time:"8 min",cat:"Storage & NFS",
+    context:"node1.domain.example.com",
+    desc:"Configure autofs to automount the home directories of remoteuserx user. Note the Following:\n- remoteuser2 home directory is exported via NFS on workstation.lab.example.com (172.25.250.9)\n- NFS-exports directory is /ourhome/remoteuser2 for remoteuser2\n- remoteuser2's home directory should be automounted using autofs service\n- home directories must be writable by their users.",
+    keyc:["dnf install -y autofs nfs-utils","echo '/ourhome /etc/auto.ourhome' >> /etc/auto.master","echo 'remoteuser2 -rw,sync workstation.lab.example.com:/ourhome/remoteuser2' > /etc/auto.ourhome","systemctl enable --now autofs","ls /ourhome/remoteuser2"],
+    sol:"# 1. Install packages\ndnf install -y autofs nfs-utils\n\n# 2. Master map configuration\necho '/ourhome  /etc/auto.ourhome' >> /etc/auto.master\n\n# 3. Direct/indirect map configuration\ncat << 'EOF' > /etc/auto.ourhome\nremoteuser2  -rw,sync  workstation.lab.example.com:/ourhome/remoteuser2\nEOF\n\n# 4. Enable and start autofs\nsystemctl enable --now autofs\n\n# 5. Verification\nls /ourhome/remoteuser2\ndf -h | grep ourhome"
+  },
+  {
+    num:13,title:"Create User with Specific UID (node1)",pts:5,time:"2 min",cat:"User Management",
+    context:"node1.domain.example.com",
+    desc:"Create a user barry User id of this user should be 2112 and set password atenorth.",
+    keyc:["useradd -u 2112 barry","echo atenorth | passwd --stdin barry","id barry"],
+    sol:"useradd -u 2112 barry\necho atenorth | passwd --stdin barry\n\n# Verification\nid barry"
+  },
+  {
+    num:14,title:"Scripting, Umask, Sudoers & App Rebuild (node1)",pts:20,time:"10 min",cat:"System Administration",
+    context:"node1.domain.example.com",
+    desc:"a. Create script /usr/local/bin/newsearch to locate all files under /usr larger than 30k, smaller than 50k with SUID permissions. Output saved into /root/myoutput.\nb. Set default permissions for user alex for all newly created files to r--r--r-- (umask 0222).\nc. Create group 'elite' with passwordless administrative sudo permission.\nd. Configure default password policy for new users to change password after 20 days.\ne. Rebuild/configure app ex200 to print message when user 'aslan' logs in and runs ex200.",
+    keyc:["cat << 'EOF' > /usr/local/bin/newsearch","chmod +x /usr/local/bin/newsearch","echo 'umask 0222' >> /home/alex/.bashrc","echo '%elite ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/elite","sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   20/' /etc/login.defs"],
+    sol:"# a. newsearch script\ncat << 'EOF' > /usr/local/bin/newsearch\n#!/bin/bash\nfind /usr -size +30k -size -50k -perm -4000 > /root/myoutput 2>/dev/null\nEOF\nchmod +x /usr/local/bin/newsearch\n\n# b. umask for alex\necho 'umask 0222' >> /home/alex/.bashrc\n\n# c. group elite with passwordless sudo\ngroupadd elite\necho '%elite ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/elite\nchmod 0440 /etc/sudoers.d/elite\n\n# d. password policy 20 days\nsed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   20/' /etc/login.defs\n\n# e. app ex200\ncat << 'EOF' > /usr/local/bin/ex200\n#!/bin/bash\necho \"EX200 App Running for user $USER\"\nEOF\nchmod +x /usr/local/bin/ex200"
+  },
+  {
+    num:15,title:"Systemd Timer Service & File ACLs (node1)",pts:20,time:"10 min",cat:"Systemd & Security",
+    context:"node1.domain.example.com",
+    desc:"a. Logger Script with Systemd Timer:\n- Install package logger from timer.repo\n- Script /usr/local/bin/logger collects logs in /var/tmp/ex200 and saves output to /root/lookup_directory/ex200\n- Create systemd service & timer to trigger every 1 minute. Enable and start.\nb. Controlling File Access Permission (ACL):\n- Copy /etc/fstab to /var/tmp/fstab, owned by root:root, non-executable.\n- User natasha: rw- permission.\n- User harry: no permissions (---).\n- Other users: r-- permission.",
+    keyc:["systemctl daemon-reload","systemctl enable --now logger.timer","systemctl list-timers logger.timer","cp /etc/fstab /var/tmp/fstab","setfacl -m u:natasha:rw /var/tmp/fstab","setfacl -m u:harry:--- /var/tmp/fstab","getfacl /var/tmp/fstab"],
+    sol:"# a. Systemd Timer\nmkdir -p /root/lookup_directory\ncat << 'EOF' > /etc/systemd/system/logger.service\n[Unit]\nDescription=Logger Service\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/logger\nEOF\n\ncat << 'EOF' > /etc/systemd/system/logger.timer\n[Unit]\nDescription=Run logger script every 1 minute\n[Timer]\nOnCalendar=*:0/1\nPersistent=true\n[Install]\nWantedBy=timers.target\nEOF\n\nsystemctl daemon-reload\nsystemctl enable --now logger.timer\n\n# b. File ACL\ncp /etc/fstab /var/tmp/fstab\nchown root:root /var/tmp/fstab\nchmod 0644 /var/tmp/fstab\nsetfacl -m u:natasha:rw /var/tmp/fstab\nsetfacl -m u:harry:--- /var/tmp/fstab\ngetfacl /var/tmp/fstab"
+  },
+  {
+    num:16,title:"Assign Root Password (node2 Recovery)",pts:15,time:"6 min",cat:"Troubleshooting",
+    context:"node2.domain.example.com",
+    desc:"Assign root password as atenorth on node2.domain.example.com by breaking into GRUB bootloader (rd.break).",
+    keyc:["rd.break","mount -o remount,rw /sysroot","chroot /sysroot","echo atenorth | passwd --stdin root","touch /.autorelabel"],
+    sol:"# In GRUB menu, press 'e', append 'rd.break' to linux line, Ctrl+x\nmount -o remount,rw /sysroot\nchroot /sysroot\necho 'atenorth' | passwd --stdin root\ntouch /.autorelabel\nexit\nexit"
+  },
+  {
+    num:17,title:"Configure Default Repositories (node2)",pts:10,time:"4 min",cat:"Package Management",
+    context:"node2.domain.example.com",
+    desc:"YUM repositories have been made available from BaseOS and AppStream URLs. Configure your systems to use these locations as default repositories on node2.",
+    keyc:["cat << 'EOF' > /etc/yum.repos.d/default.repo","dnf clean all","dnf repolist"],
+    sol:"cat << 'EOF' > /etc/yum.repos.d/default.repo\n[BaseOS]\nname=BaseOS\nbaseurl=http://content.example.com/rhel10.0/x86_64/dvd/BaseOS\nenabled=1\ngpgcheck=0\n\n[AppStream]\nname=AppStream\nbaseurl=http://content.example.com/rhel10.0/x86_64/dvd/AppStream\nenabled=1\ngpgcheck=0\nEOF\n\ndnf clean all\ndnf repolist"
+  },
+  {
+    num:18,title:"Configure Tuning Profile (node2)",pts:10,time:"3 min",cat:"Performance",
+    context:"node2.domain.example.com",
+    desc:"Set the recommended tuned profile for your system on node2.",
+    keyc:["tuned-adm recommend","tuned-adm profile virtual-guest","tuned-adm active"],
+    sol:"# 1. Query recommendation\ntuned-adm recommend\n\n# 2. Apply recommended profile\ntuned-adm profile $(tuned-adm recommend)\n\n# 3. Verify\ntuned-adm active"
+  },
+  {
+    num:19,title:"Flatpak Repository & Application (node2)",pts:15,time:"7 min",cat:"Containers & Apps",
+    context:"node2.domain.example.com",
+    desc:"1. Configure a Flatpak remote repository named extra that is available only to the user bammbamm.\n2. Using the extra repository, install the Flatpak application codium for the user bammbamm.\n3. Verify that the repository extra and the application codium are accessible only for user bammbamm.",
+    keyc:["useradd bammbamm","flatpak remote-add --user extra http://content.example.com/flatpak/repo","flatpak install --user extra codium -y","flatpak list --user"],
+    sol:"# 1. Ensure user exists\nuseradd bammbamm\necho 'atenorth' | passwd --stdin bammbamm\n\n# 2. Add remote in user scope\nsu - bammbamm -c 'flatpak remote-add --user extra http://content.example.com/flatpak/repo'\n\n# 3. Install application in user scope\nsu - bammbamm -c 'flatpak install --user -y extra codium'\n\n# 4. Verify user scope vs system scope\nsu - bammbamm -c 'flatpak list --user'\nflatpak list --system"
+  },
+  {
+    num:20,title:"Configure Swap Partition (node2)",pts:15,time:"6 min",cat:"Storage",
+    context:"node2.domain.example.com",
+    desc:"Create a SWAP partition of 250 megabyte and make available at next reboot. Partition already available.",
+    keyc:["mkswap /dev/vdb1","swapon /dev/vdb1","echo 'UUID=... swap swap defaults 0 0' >> /etc/fstab","swapon --show","free -m"],
+    sol:"# 1. Format swap\nmkswap /dev/vdb1\n\n# 2. Add to /etc/fstab by UUID\necho \"UUID=$(blkid -s UUID -o value /dev/vdb1) swap swap defaults 0 0\" >> /etc/fstab\n\n# 3. Activate\nswapon -a\n\n# 4. Verification\nswapon --show\nfree -m"
+  },
+  {
+    num:21,title:"Configure Volumes (LVM + VFAT) (node2)",pts:20,time:"8 min",cat:"Storage & LVM",
+    context:"node2.domain.example.com",
+    desc:"1. Create the volume group with name myvol with 8 MiB P.E.\n2. Create the lvm name mydatabase with the 50 P.E. and format this lvm with vfat.\n3. Create a directory /database and mount this lvm permanently on /database.",
+    keyc:["vgcreate -s 8M myvol /dev/vdb2","lvcreate -l 50 -n mydatabase myvol","mkfs.vfat /dev/myvol/mydatabase","mkdir -p /database","echo '/dev/myvol/mydatabase /database vfat defaults 0 0' >> /etc/fstab","mount -a","df -h /database"],
+    sol:"# 1. Install dosfstools if needed\ndnf install -y dosfstools\n\n# 2. Create VG with 8M PE\nvgcreate -s 8M myvol /dev/vdb2\n\n# 3. Create LV with 50 extents (50 * 8M = 400M)\nlvcreate -l 50 -n mydatabase myvol\n\n# 4. Format with VFAT\nmkfs.vfat /dev/myvol/mydatabase\n\n# 5. Persistent mount\nmkdir -p /database\necho '/dev/myvol/mydatabase  /database  vfat  defaults  0 0' >> /etc/fstab\nmount -a\n\n# 6. Verify\ndf -h /database\nvgs myvol\nlvs myvol/mydatabase"
+  },
+  {
+    num:22,title:"Resize the Logical Volume (node2)",pts:15,time:"5 min",cat:"Storage & LVM",
+    context:"node2.domain.example.com",
+    desc:"1. Resize the logical volume home in volume group myvg to 152 MB (38 extents).\n2. After resizing, the logical volume size should be between 145 MB to 155 MB.\n3. Ensure that the filesystem remains accessible on /home.",
+    keyc:["lvresize -r -L 152M /dev/myvg/home","lvs /dev/myvg/home","df -h /home"],
+    sol:"# Resize LV and filesystem simultaneously with -r\nlvresize -r -L 152M /dev/myvg/home\n# (or: lvresize -r -l 38 /dev/myvg/home)\n\n# Verification\nlvs /dev/myvg/home\ndf -h /home"
+  }
+];
+
+
+var ALL_EXAMS = {
+  v10: { name: 'codeXchange V10 (22 Tasks)', tasks: EXAM_V10_TASKS },
+  classic: { name: 'Standard Exam (18 Tasks)', tasks: EXAM_TASKS_CLASSIC }
+};
+var currentExamKey = 'v10';
+var EXAM_TASKS = ALL_EXAMS[currentExamKey].tasks;
+
+function switchExam(key){
+  if(!ALL_EXAMS[key]) return;
+  currentExamKey = key;
+  EXAM_TASKS = ALL_EXAMS[key].tasks;
+  pexStatus = {};
+  pexCurrent = 0;
+  pexCmdsTyped = {};
+  mtStatus = {};
+  pexStarted = false;
+  if(pexTimerID){ clearInterval(pexTimerID); pexTimerID=null; }
+  pexSeconds = 10800;
+  var sel = document.getElementById('exam-selector');
+  if(sel) sel.value = key;
+  renderPexSidebar();
+  pexLoadTask(0);
+  pexUpdateScore();
+  if(document.getElementById('panel-mocktracker') && document.getElementById('panel-mocktracker').style.display !== 'none'){
+    mtRenderBody();
+    mtUpdateScore();
+  }
+}
+
 var pexStatus={};   // num -> 'done'|'skip'
 var pexCurrent=0;   // index into EXAM_TASKS
 var pexTimerID=null, pexSeconds=10800, pexRunning=false, pexStarted=false;
@@ -437,6 +635,15 @@ function pexLoadTask(idx){
   document.getElementById('pex-task-title').textContent=t.title;
   document.getElementById('pex-pts').textContent=t.pts+' pts | Est: '+t.time;
   document.getElementById('pex-cat').textContent=t.cat;
+  var ctxEl=document.getElementById('pex-context');
+  if(ctxEl){
+    if(t.context){
+      ctxEl.textContent=t.context;
+      ctxEl.style.display='inline-block';
+    } else {
+      ctxEl.style.display='none';
+    }
+  }
   document.getElementById('pex-desc').textContent=t.desc;
   document.getElementById('pex-sol-text').textContent=t.sol;
   document.getElementById('pex-ver-text').textContent=t.ver;
@@ -567,6 +774,15 @@ document.addEventListener('DOMContentLoaded',function(){
 function renderPexSidebar(){
   var sc=document.getElementById('sidebar-content');
   sc.innerHTML='';
+  // Exam Switcher dropdown
+  var exSwitch=document.createElement('div');
+  exSwitch.style.cssText='padding:6px 6px;background:#0d1117;border-bottom:1px solid #30363d;margin-bottom:6px;display:flex;align-items:center;gap:6px';
+  exSwitch.innerHTML='<span style=""font-size:10px;color:#8b949e;font-weight:bold"">EXAM:</span>'+
+    '<select id=""exam-selector"" onchange=""switchExam(this.value)"" style=""flex:1;background:#161b22;color:#58a6ff;border:1px solid #30363d;border-radius:3px;padding:3px 4px;font-size:10px;font-family:inherit;cursor:pointer"">'+
+    '<option value=""v10"" '+(currentExamKey==='v10'?'selected':'')+'>codeXchange V10 (22 Tasks)</option>'+
+    '<option value=""classic"" '+(currentExamKey==='classic'?'selected':'')+'>Standard Mock (18 Tasks)</option>'+
+    '</select>';
+  sc.appendChild(exSwitch);
   // Start button at top if not started
   if(!pexStarted){
     var sb=document.createElement('div');
@@ -641,6 +857,8 @@ function mtUpdateScore(){
   var pts=0,done=0;
   EXAM_TASKS.forEach(function(t){if(mtStatus[t.num]==='done'){pts+=t.pts;done++;}});
   document.getElementById('mt-pts').textContent=pts;
+  var mtInfo=document.getElementById('mt-info');
+  if(mtInfo) mtInfo.textContent=EXAM_TASKS.length+' tasks | 300 pts | Pass = 210';
   var skip=Object.keys(mtStatus).filter(function(k){return mtStatus[k]==='skip';}).length;
   document.getElementById('mt-info').textContent='Done: '+done+'/18 | Score: '+pts+'/300'+(pts>=210?' | \u2713 PASS':'');
 }
@@ -890,7 +1108,43 @@ var CHEAT=[
    DRILLS
    ============================================================ */
 var DRILLS=[
-    {cat:"SSH",task:"Enable AND start sshd in one command",answer:"systemctl enable --now sshd",hint:"systemctl enable --now sshd"},
+      {cat:"find",task:"Find all .conf files under /etc",answer:"find /etc -name '*.conf'",hint:"find /etc -name '*.conf'"},
+  {cat:"find",task:"Find files modified in the last 7 days under /var",answer:"find /var -mtime -7 -type f",hint:"find /var -mtime -7 -type f"},
+  {cat:"find",task:"Find files larger than 100MB on the system",answer:"find / -type f -size +100M 2>/dev/null",hint:"find / -type f -size +100M 2>/dev/null"},
+  {cat:"find",task:"Find all files owned by alice",answer:"find / -user alice -type f 2>/dev/null",hint:"find / -user alice -type f 2>/dev/null"},
+  {cat:"find",task:"Find all SUID files on the system",answer:"find / -perm -4000 -type f 2>/dev/null",hint:"find / -perm -4000 -type f 2>/dev/null"},
+  {cat:"find",task:"Find world-writable files on the system",answer:"find / -perm -o+w -type f 2>/dev/null",hint:"find / -perm -o+w -type f 2>/dev/null"},
+  {cat:"find",task:"Find all empty directories under /tmp",answer:"find /tmp -type d -empty",hint:"find /tmp -type d -empty"},
+  {cat:"find",task:"Delete log files older than 30 days in /var/log",answer:"find /var/log -name '*.log' -mtime +30 -delete",hint:"find /var/log -name '*.log' -mtime +30 -delete"},
+  {cat:"find",task:"Find .sh files and make them executable with -exec",answer:"find /scripts -name '*.sh' -exec chmod +x {} \\;",hint:"find /scripts -name '*.sh' -exec chmod +x {} \\;"},
+  {cat:"find",task:"Find files with no owner (orphaned files)",answer:"find / -nouser 2>/dev/null",hint:"find / -nouser 2>/dev/null"},
+  {cat:"find",task:"Find files newer than /etc/passwd in /etc",answer:"find /etc -newer /etc/passwd",hint:"find /etc -newer /etc/passwd"},
+  {cat:"find",task:"Find regular files in /etc NOT ending in .conf",answer:"find /etc -type f -not -name '*.conf'",hint:"find /etc -type f -not -name '*.conf'"},
+  {cat:"grep",task:"Search case-insensitively for error in /var/log/messages",answer:"grep -i 'error' /var/log/messages",hint:"grep -i 'error' /var/log/messages"},
+  {cat:"grep",task:"Show active (non-comment, non-blank) lines in sshd_config",answer:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'",hint:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'"},
+  {cat:"grep",task:"Show line numbers where Port appears in sshd_config",answer:"grep -n 'Port' /etc/ssh/sshd_config",hint:"grep -n 'Port' /etc/ssh/sshd_config"},
+  {cat:"grep",task:"Count how many lines contain error in /var/log/messages",answer:"grep -c 'error' /var/log/messages",hint:"grep -c 'error' /var/log/messages"},
+  {cat:"grep",task:"List only filenames containing password in /etc/*.conf",answer:"grep -l 'password' /etc/*.conf",hint:"grep -l 'password' /etc/*.conf"},
+  {cat:"grep",task:"Recursively find PermitRootLogin in /etc/ssh with line numbers",answer:"grep -rn 'PermitRootLogin' /etc/ssh/",hint:"grep -rn 'PermitRootLogin' /etc/ssh/"},
+  {cat:"grep",task:"Show 3 lines after each FAILED match in /var/log/secure",answer:"grep -A 3 'FAILED' /var/log/secure",hint:"grep -A 3 'FAILED' /var/log/secure"},
+  {cat:"grep",task:"Match lines starting with root in /etc/passwd",answer:"grep '^root' /etc/passwd",hint:"grep '^root' /etc/passwd"},
+  {cat:"grep",task:"Match lines ending with /bin/bash in /etc/passwd",answer:"grep '/bin/bash$' /etc/passwd",hint:"grep '/bin/bash$' /etc/passwd"},
+  {cat:"grep",task:"Filter output: show only lines with error OR fail (extended regex)",answer:"grep -E 'error|fail' /var/log/messages",hint:"grep -E 'error|fail' /var/log/messages"},
+  {cat:"Scripting",task:"Write the correct shebang line for a bash script",answer:"#!/bin/bash",hint:"#!/bin/bash"},
+  {cat:"Scripting",task:"Syntax-check a script file without running it",answer:"bash -n myscript.sh",hint:"bash -n myscript.sh"},
+  {cat:"Scripting",task:"Run a script in debug trace mode",answer:"bash -x myscript.sh",hint:"bash -x myscript.sh"},
+  {cat:"Scripting",task:"Capture hostname output into a variable called HOST",answer:"HOST=$(hostname)",hint:"HOST=$(hostname)"},
+  {cat:"Scripting",task:"Test if /etc/passwd exists as a regular file",answer:"[ -f /etc/passwd ] && echo yes",hint:"[ -f /etc/passwd ] && echo yes"},
+  {cat:"Scripting",task:"Test if a variable VAR is empty",answer:'[ -z "$VAR" ]',hint:'[ -z "$VAR" ]'},
+  {cat:"Scripting",task:"For loop: print numbers 1 through 10 using brace expansion",answer:"for i in {1..10}; do echo $i; done",hint:"for i in {1..10}; do echo $i; done"},
+  {cat:"Scripting",task:"Read a file line by line with a while loop",answer:'while IFS= read -r LINE; do echo "$LINE"; done < file.txt',hint:'while IFS= read -r LINE; do echo "$LINE"; done < file.txt'},
+  {cat:"Scripting",task:"Provision users from a CSV (user,group,pass) with while loop",answer:'while IFS=, read -r U G P; do useradd -G $G $U; echo "$P" | passwd --stdin $U; done < users.csv',hint:"while IFS=, read -r U G P; do ..."},
+  {cat:"Scripting",task:"Print the exit code of the last command",answer:"echo $?",hint:"echo $?"},
+  {cat:"Scripting",task:"Get basename from path in VAR (strip leading directories)",answer:'${VAR##*/}',hint:'${VAR##*/}'},
+  {cat:"Scripting",task:"Strip file extension from VAR (file.txt becomes file)",answer:'${VAR%.*}',hint:'${VAR%.*}'},
+  {cat:"Scripting",task:"Enforce root: exit with error if not running as root",answer:"[ $(id -u) -ne 0 ] && echo 'Must be root' && exit 1",hint:"[ $(id -u) -ne 0 ] && echo 'Must be root' && exit 1"},
+
+  {cat:"SSH",task:"Enable AND start sshd in one command",answer:"systemctl enable --now sshd",hint:"systemctl enable --now sshd"},
   {cat:"SSH",task:"Restart the SSH daemon",answer:"systemctl restart sshd",hint:"systemctl restart sshd"},
   {cat:"SSH",task:"Test sshd_config syntax without restarting",answer:"sshd -t",hint:"sshd -t"},
   {cat:"SSH",task:"Generate a 4096-bit RSA SSH key pair",answer:"ssh-keygen -t rsa -b 4096",hint:"ssh-keygen -t rsa -b 4096"},
@@ -1294,9 +1548,248 @@ var TOOLS=[
   ]},
 ];
 
-function renderToolsSidebar(){
+
+/* ============================================================
+   DEEP DIVE DATA — find / grep / scripting
+   ============================================================ */
+var FIND_GUIDE=[
+  {section:"Basic Syntax",items:[
+    {cmd:"find [PATH] [OPTIONS] [EXPRESSION]",d:"General form"},
+    {cmd:"find . -name 'report.txt'",d:"Find in current dir and below"},
+    {cmd:"find / -name 'sshd_config'",d:"Find anywhere on the system"},
+    {cmd:"find /etc /var -name '*.conf'",d:"Search multiple paths"},
+  ]},
+  {section:"By Name",items:[
+    {cmd:"find /etc -name '*.conf'",d:"Match exact pattern (case-sensitive)"},
+    {cmd:"find /home -iname '*.txt'",d:"-iname = case-insensitive"},
+    {cmd:"find /var -name 'messages*'",d:"Wildcard: starts with messages"},
+    {cmd:"find / -name '*.sh' -type f",d:"Shell scripts (files only)"},
+    {cmd:"find /etc -not -name '*.conf'",d:"Files NOT ending in .conf"},
+  ]},
+  {section:"By Type",items:[
+    {cmd:"find /etc -type f",d:"Regular files only"},
+    {cmd:"find /var -type d",d:"Directories only"},
+    {cmd:"find /usr -type l",d:"Symbolic links only"},
+    {cmd:"find /tmp -type d -empty",d:"Empty directories"},
+    {cmd:"find / -type f -empty",d:"Empty files"},
+  ]},
+  {section:"By Size",items:[
+    {cmd:"find / -type f -size +100M",d:"Files larger than 100 MB"},
+    {cmd:"find / -type f -size -1k",d:"Files smaller than 1 KB"},
+    {cmd:"find /var/log -size +50M",d:"Log files over 50 MB"},
+    {cmd:"find / -type f -size +1G 2>/dev/null",d:"Files over 1 GB"},
+  ]},
+  {section:"By Time (days)",items:[
+    {cmd:"find /etc -mtime -7",d:"Modified in last 7 days"},
+    {cmd:"find /var/log -mtime +30",d:"Modified MORE than 30 days ago"},
+    {cmd:"find /tmp -atime +3",d:"Not accessed in 3+ days"},
+    {cmd:"find /etc -newer /etc/passwd",d:"Newer than a reference file"},
+    {cmd:"find /home -ctime -1",d:"Status changed in last 24 hours"},
+  ]},
+  {section:"By Owner and Permissions",items:[
+    {cmd:"find /home -user alice",d:"Files owned by alice"},
+    {cmd:"find /var -group developers",d:"Files owned by group developers"},
+    {cmd:"find / -nouser 2>/dev/null",d:"Files with no owner (orphaned)"},
+    {cmd:"find / -nogroup 2>/dev/null",d:"Files with no group"},
+    {cmd:"find / -perm -4000 2>/dev/null",d:"Files with SUID bit set"},
+    {cmd:"find / -perm -2000 2>/dev/null",d:"Files with SGID bit set"},
+    {cmd:"find / -perm -o+w 2>/dev/null",d:"World-writable files"},
+    {cmd:"find /etc -perm 644",d:"Files with exact perms 644"},
+  ]},
+  {section:"Actions on Results",items:[
+    {cmd:"find /tmp -name '*.tmp' -delete",d:"Delete matching files"},
+    {cmd:"find /var/log -name '*.log' -mtime +30 -exec rm {} \\;",d:"Delete old logs one by one"},
+    {cmd:"find /home -type f -exec chmod 644 {} \\;",d:"chmod every file found"},
+    {cmd:"find /scripts -name '*.sh' -exec chmod +x {} \\;",d:"Make all scripts executable"},
+    {cmd:"find /etc -name '*.conf' -exec grep -l 'password' {} \\;",d:"Configs containing password"},
+    {cmd:"find / -nouser -exec chown root {} \\;",d:"Fix orphaned files"},
+    {cmd:"find /var/log -name '*.log' -ls",d:"-ls shows detailed listing"},
+    {cmd:"find /home -type f | wc -l",d:"Count matching files"},
+  ]},
+  {section:"Combining Conditions",items:[
+    {cmd:"find /var/log -name '*.log' -size +10M -mtime +7",d:"AND: both must match"},
+    {cmd:"find /etc -name '*.conf' -o -name '*.cfg'",d:"OR: either condition"},
+    {cmd:"find / -perm -4000 -type f -not -user root",d:"SUID files NOT owned by root"},
+    {cmd:"find /tmp -maxdepth 1 -mtime +7",d:"maxdepth 1 = top level only"},
+    {cmd:"find /etc -mindepth 2 -name '*.conf'",d:"mindepth 2 = skip top level"},
+  ]},
+  {section:"RHCSA Exam Patterns",items:[
+    {cmd:"find / -user alice -type f 2>/dev/null > /tmp/alice_files.txt",d:"Save file list for user"},
+    {cmd:"find / -size +50M -type f -exec ls -lh {} \\; 2>/dev/null",d:"List large files with sizes"},
+    {cmd:"find / -perm -4000 -type f 2>/dev/null",d:"Security: find all SUID files"},
+    {cmd:"find /var/log -name '*.log' -mtime +7 -exec gzip {} \\;",d:"Compress old logs"},
+    {cmd:"find /etc -type f -newer /etc/redhat-release | sort",d:"Files changed since install"},
+  ]},
+];
+
+var GREP_GUIDE=[
+  {section:"Basic Syntax",items:[
+    {cmd:"grep 'pattern' filename",d:"Basic search in a file"},
+    {cmd:"grep 'pattern' file1 file2",d:"Search multiple files"},
+    {cmd:"grep 'pattern' /etc/*.conf",d:"Search with glob"},
+    {cmd:"command | grep 'pattern'",d:"Filter pipeline output"},
+  ]},
+  {section:"Common Flags",items:[
+    {cmd:"grep -i 'error' /var/log/messages",d:"-i  ignore case"},
+    {cmd:"grep -v '^#' /etc/ssh/sshd_config",d:"-v  invert (lines NOT matching)"},
+    {cmd:"grep -n 'Port' /etc/ssh/sshd_config",d:"-n  show line numbers"},
+    {cmd:"grep -c 'error' /var/log/messages",d:"-c  count matching lines"},
+    {cmd:"grep -l 'password' /etc/*.conf",d:"-l  list filenames only"},
+    {cmd:"grep -L 'password' /etc/*.conf",d:"-L  files that do NOT match"},
+    {cmd:"grep -w 'root' /etc/passwd",d:"-w  whole word match"},
+    {cmd:"grep -q 'pattern' file && echo found",d:"-q  quiet, just return exit code"},
+    {cmd:"grep -m 5 'error' /var/log/messages",d:"-m  stop after 5 matches"},
+  ]},
+  {section:"Recursive Search",items:[
+    {cmd:"grep -r 'password' /etc/",d:"-r  recursive"},
+    {cmd:"grep -rl 'PermitRoot' /etc/",d:"Recursive, list files only"},
+    {cmd:"grep -rn 'error' /var/log/ --include='*.log'",d:"Recursive in .log files only"},
+    {cmd:"grep -r 'pattern' /etc/ --exclude='*.bak'",d:"Recursive, exclude backups"},
+  ]},
+  {section:"Context Lines",items:[
+    {cmd:"grep -A 3 'error' /var/log/messages",d:"-A 3  show 3 lines AFTER match"},
+    {cmd:"grep -B 3 'error' /var/log/messages",d:"-B 3  show 3 lines BEFORE match"},
+    {cmd:"grep -C 3 'error' /var/log/messages",d:"-C 3  show 3 lines either side"},
+  ]},
+  {section:"Regular Expressions (anchors)",items:[
+    {cmd:"grep '^root' /etc/passwd",d:"^ = starts with root"},
+    {cmd:"grep 'bash$' /etc/passwd",d:"$ = ends with bash"},
+    {cmd:"grep '^$' file",d:"Match empty lines"},
+    {cmd:"grep '^[^#]' /etc/ssh/sshd_config",d:"Lines not starting with #"},
+    {cmd:"grep -v '^#\\|^$' /etc/ssh/sshd_config",d:"Remove comments AND blank lines"},
+  ]},
+  {section:"Extended Regex (-E)",items:[
+    {cmd:"grep -E 'cat|dog' file",d:"Match cat OR dog"},
+    {cmd:"grep -E 'colou?r' file",d:"? = zero or one"},
+    {cmd:"grep -E 'go+' file",d:"+ = one or more"},
+    {cmd:"grep -E '^(Alice|Bob) ' roster.txt",d:"Line starts with Alice or Bob"},
+    {cmd:"grep -E '(error|fail|critical)' /var/log/messages",d:"Multi-keyword log search"},
+    {cmd:"grep -E '[0-9]{1,3}\\.[0-9]{1,3}' file",d:"Rough IP address match"},
+  ]},
+  {section:"RHCSA Exam Patterns",items:[
+    {cmd:"grep -v '^#' /etc/ssh/sshd_config | grep -v '^$'",d:"Active sshd settings"},
+    {cmd:"grep -v '^#' /etc/fstab | grep -v '^$'",d:"Active fstab mounts"},
+    {cmd:"grep '^alice:' /etc/passwd",d:"Verify user alice exists"},
+    {cmd:"grep 'alice' /etc/group",d:"Find alice group memberships"},
+    {cmd:"grep -i 'failed\\|error\\|denied' /var/log/secure",d:"Auth failures"},
+    {cmd:"grep -rn 'PermitRootLogin' /etc/ssh/",d:"Find SSH root login setting"},
+    {cmd:"journalctl | grep -i 'error\\|fail' | tail -20",d:"Recent journal errors"},
+  ]},
+];
+
+var SCRIPT_GUIDE=[
+  {section:"Script Skeleton",items:[
+    {cmd:"#!/bin/bash",d:"ALWAYS first line — specifies interpreter"},
+    {cmd:"# Description: purpose, author, date",d:"Comment block at top"},
+    {cmd:"set -euo pipefail",d:"Strict mode: exit on error / unset var / pipe fail"},
+    {cmd:"chmod +x /usr/local/bin/myscript.sh",d:"Make executable"},
+    {cmd:"bash -n myscript.sh",d:"Syntax check without running"},
+    {cmd:"bash -x myscript.sh",d:"Debug mode — trace each command"},
+  ]},
+  {section:"Variables",items:[
+    {cmd:"NAME='Alice'",d:"Assign variable (no spaces around =)"},
+    {cmd:"echo ${NAME}",d:"Use variable (braces safer)"},
+    {cmd:"RESULT=$(hostname)",d:"Capture command output"},
+    {cmd:"COUNT=$(wc -l < /etc/passwd)",d:"Capture numeric output"},
+    {cmd:"DATE=$(date '+%Y-%m-%d')",d:"Formatted date string"},
+    {cmd:"readonly MAX=100",d:"Constant — cannot be changed"},
+  ]},
+  {section:"Arguments and Input",items:[
+    {cmd:"$0  $1  $2  $#  $@",d:"Script name, args 1/2, arg count, all args"},
+    {cmd:"if [ $# -lt 2 ]; then echo 'Usage: $0 u g'; exit 1; fi",d:"Require 2 arguments"},
+    {cmd:"read -p 'Enter username: ' USERNAME",d:"Interactive prompt"},
+    {cmd:"read -rsp 'Password: ' PASS",d:"-s = silent (no echo)"},
+    {cmd:"while IFS=, read -r USER GROUP PASS; do echo $USER; done < users.csv",d:"Read CSV line by line"},
+  ]},
+  {section:"if / elif / else",items:[
+    {cmd:"if [ condition ]; then ... elif [ c ]; then ... else ... fi",d:"Full if structure"},
+    {cmd:"if [ -f /etc/passwd ]; then echo 'exists'; fi",d:"Test file exists"},
+    {cmd:"if [ -z \"$VAR\" ]; then echo 'empty'; fi",d:"-z = string is empty"},
+    {cmd:"if [ -n \"$VAR\" ]; then echo 'set'; fi",d:"-n = string is not empty"},
+    {cmd:"if [ \"$USER\" = 'root' ]; then ...; fi",d:"String equality"},
+    {cmd:"if [ $COUNT -gt 10 ]; then ...; fi",d:"Numeric: -gt -lt -ge -le -eq -ne"},
+    {cmd:"if [ $A -eq 1 ] || [ $A -eq 2 ]; then ...; fi",d:"OR condition"},
+  ]},
+  {section:"File Test Operators",items:[
+    {cmd:"[ -f file ]",d:"-f  file exists and is regular file"},
+    {cmd:"[ -d dir ]",d:"-d  directory exists"},
+    {cmd:"[ -e path ]",d:"-e  exists (any type)"},
+    {cmd:"[ -r file ]",d:"-r  readable by current user"},
+    {cmd:"[ -w file ]",d:"-w  writable by current user"},
+    {cmd:"[ -x file ]",d:"-x  executable"},
+    {cmd:"[ -s file ]",d:"-s  exists and NOT empty"},
+    {cmd:"[ -L link ]",d:"-L  symbolic link"},
+    {cmd:"[ f1 -nt f2 ]",d:"-nt  file1 is newer than file2"},
+  ]},
+  {section:"for loops",items:[
+    {cmd:"for i in 1 2 3; do echo $i; done",d:"Simple list loop"},
+    {cmd:"for i in {1..10}; do echo $i; done",d:"Brace expansion 1 to 10"},
+    {cmd:"for USER in alice bob carol; do useradd $USER; done",d:"Loop over list"},
+    {cmd:"for FILE in /etc/*.conf; do echo $FILE; done",d:"Loop over glob pattern"},
+    {cmd:"for i in $(cat userlist.txt); do echo $i; done",d:"Loop over file contents"},
+  ]},
+  {section:"while loops",items:[
+    {cmd:"while [ condition ]; do ...; done",d:"While condition is true"},
+    {cmd:"while IFS= read -r LINE; do echo \"$LINE\"; done < file.txt",d:"Read file line by line (safest)"},
+    {cmd:"while IFS=, read -r U G P; do useradd -G $G $U; echo \"$P\" | passwd --stdin $U; done < users.csv",d:"Provision users from CSV"},
+    {cmd:"COUNT=0; while [ $COUNT -lt 5 ]; do echo $COUNT; ((COUNT++)); done",d:"Counter loop"},
+  ]},
+  {section:"Functions",items:[
+    {cmd:"function log_msg { echo \"$(date '+%F %T') - $1\" >> /var/log/script.log; }",d:"Logging function"},
+    {cmd:"log_msg 'Started backup'",d:"Call the function"},
+    {cmd:"check_root() { [ $(id -u) -ne 0 ] && echo 'Need root' && exit 1; }",d:"Root check function"},
+    {cmd:"return 0",d:"Return success from function"},
+    {cmd:"return 1",d:"Return failure from function"},
+  ]},
+  {section:"Exit Codes and Error Handling",items:[
+    {cmd:"echo $?",d:"Exit code of last command (0=success)"},
+    {cmd:"command || { echo 'failed'; exit 1; }",d:"Bail on command failure"},
+    {cmd:"command && echo 'OK' || echo 'FAIL'",d:"Success/fail message"},
+    {cmd:"trap 'echo Interrupted; exit 1' SIGINT SIGTERM",d:"Cleanup on Ctrl-C"},
+    {cmd:"exit 0",d:"Exit script successfully"},
+    {cmd:"exit 1",d:"Exit with error code"},
+  ]},
+  {section:"String Operations",items:[
+    {cmd:"${#VAR}",d:"Length of string"},
+    {cmd:"${VAR:0:5}",d:"Substring: chars 0 to 4"},
+    {cmd:"${VAR,,}",d:"Lowercase the string"},
+    {cmd:"${VAR^^}",d:"Uppercase the string"},
+    {cmd:"${VAR/old/new}",d:"Replace first occurrence"},
+    {cmd:"${VAR//old/new}",d:"Replace ALL occurrences"},
+    {cmd:"${VAR:-default}",d:"Use default if VAR is unset or empty"},
+    {cmd:"${VAR##*/}",d:"Basename: /path/to/file -> file"},
+    {cmd:"${VAR%.*}",d:"Strip extension: file.txt -> file"},
+  ]},
+  {section:"RHCSA Exam Script Patterns",items:[
+    {cmd:"[ $(id -u) -ne 0 ] && echo 'Must be root' && exit 1",d:"Enforce root execution"},
+    {cmd:"while IFS=, read -r U P G; do useradd -G $G $U; echo \"$P\" | passwd --stdin $U; done < /tmp/users.csv",d:"Bulk user provisioning from CSV"},
+    {cmd:"df -h && free -m && uptime && systemctl --failed",d:"System health one-liner"},
+    {cmd:"find /home -type f -name '*.sh' -exec chmod +x {} \\;",d:"Make all user scripts executable"},
+    {cmd:"tar -czf /backup/etc_$(date +%Y%m%d).tar.gz /etc && echo OK >> $LOG || echo FAIL >> $LOG",d:"Backup with logging"},
+    {cmd:"for U in $(awk -F: '$3>=1000{print $1}' /etc/passwd); do echo \"$U: $(id $U)\"; done",d:"List all regular users"},
+  ]},
+];
+
+
+function renderToolsSidebar(mode){
+  mode=mode||'tools';
   var sc=document.getElementById('sidebar-content');
   sc.innerHTML='';
+
+  var _nav=document.createElement('div');
+  _nav.style.cssText='display:flex;gap:3px;margin-bottom:8px;flex-wrap:wrap';
+  [['tools','All Tools'],['find','find'],['grep','grep'],['scripting','Scripting']].forEach(function(pair){
+    var _b=document.createElement('button');
+    _b.textContent=pair[1];
+    _b.style.cssText='flex:1;padding:3px 2px;background:'+(mode===pair[0]?'#0f3460':'#111')+';border:1px solid '+(mode===pair[0]?'#00d4aa':'#222')+';color:'+(mode===pair[0]?'#00d4aa':'#888')+';border-radius:3px;cursor:pointer;font-size:9px;font-family:inherit';
+    _b.onclick=(function(m){return function(){renderToolsSidebar(m);};})(pair[0]);
+    _nav.appendChild(_b);
+  });
+  sc.appendChild(_nav);
+  if(mode==='find'){renderGuide(FIND_GUIDE,sc);return;}
+  if(mode==='grep'){renderGuide(GREP_GUIDE,sc);return;}
+  if(mode==='scripting'){renderGuide(SCRIPT_GUIDE,sc);return;}
+
   TOOLS.forEach(function(section){
     var catDiv=document.createElement('div');
     catDiv.innerHTML='<div class="tool-cat">'+xe(section.cat)+'</div>';
@@ -1319,6 +1812,25 @@ function renderToolsSidebar(){
       catDiv.appendChild(wrap);
     });
     sc.appendChild(catDiv);
+  });
+}
+
+
+function renderGuide(guide,sc){
+  guide.forEach(function(section){
+    var hdr=document.createElement('div');
+    hdr.className='tool-cat';
+    hdr.textContent=section.section;
+    sc.appendChild(hdr);
+    section.items.forEach(function(item){
+      var row=document.createElement('div');
+      row.className='tool-pattern';
+      row.style.marginBottom='3px';
+      row.onclick=function(){pasteTool(item.cmd.split('\n')[0]);};
+      row.innerHTML='<span class="tp-cmd">$ '+xe(item.cmd)+'</span>'
+        +'<span class="tp-desc">'+xe(item.d)+'</span>';
+      sc.appendChild(row);
+    });
   });
 }
 
