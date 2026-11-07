@@ -1,40 +1,42 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>RHCSA EX200 - Terminal Practice</title>
 <script src="cosmic-background.js"></script>
+<link rel="stylesheet" href="high-gloss-lacquer.css">
+<script src="high-gloss-lacquer.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;font-size:14px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-#topbar{background:rgba(26,26,46,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #e94560;padding:6px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-#topbar h1{color:#e94560;font-size:14px;white-space:nowrap}
+#topbar{background:rgba(14,23,38,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2px solid #C8A96E;padding:6px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+#topbar h1{color:#C8A96E;font-size:14px;white-space:nowrap;font-weight:700}
 .spacer{flex:1}
-#score-box{background:#0f3460;border-radius:5px;padding:3px 10px;font-size:11px;color:#00d4aa;white-space:nowrap}
+#score-box{background:#1B2A4A;border:1px solid rgba(200,169,110,0.3);border-radius:5px;padding:3px 10px;font-size:11px;color:#dfc288;white-space:nowrap}
 #mode-btns{display:flex;gap:5px}
-.mode-btn{background:#16213e;border:1px solid #0f3460;color:#aaa;padding:3px 9px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit}
-.mode-btn.active{background:#e94560;border-color:#e94560;color:#fff}
+.mode-btn{background:#16213e;border:1px solid rgba(200,169,110,0.2);color:#aaa;padding:3px 9px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit}
+.mode-btn.active{background:#C8A96E;border-color:#C8A96E;color:#0e1726;font-weight:700}
 #main{display:flex;flex:1;overflow:hidden}
 /* SIDEBAR */
-#sidebar{width:260px;background:rgba(17,17,17,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-right:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
-#sidebar-tabs{display:flex;border-bottom:1px solid #222;flex-shrink:0}
-.stab{flex:1;text-align:center;padding:6px 2px;cursor:pointer;font-size:10px;color:#666;border-bottom:2px solid transparent}
-.stab.active{color:#00d4aa;border-bottom-color:#00d4aa}
+#sidebar{width:260px;background:rgba(20,30,48,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-right:1px solid rgba(200,169,110,0.22);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#sidebar-tabs{display:flex;border-bottom:1px solid rgba(200,169,110,0.2);flex-shrink:0}
+.stab{flex:1;text-align:center;padding:6px 2px;cursor:pointer;font-size:10px;color:#94a3b8;border-bottom:2px solid transparent}
+.stab.active{color:#C8A96E;border-bottom-color:#C8A96E;font-weight:700}
 #sidebar-content{flex:1;overflow-y:auto;padding:6px}
 #sidebar-content::-webkit-scrollbar{width:6px}
-#sidebar-content::-webkit-scrollbar-track{background:#111}
-#sidebar-content::-webkit-scrollbar-thumb{background:#1a4a6a;border-radius:4px}
-#sidebar-content::-webkit-scrollbar-thumb:hover{background:#00d4aa}
+#sidebar-content::-webkit-scrollbar-track{background:#0c121e}
+#sidebar-content::-webkit-scrollbar-thumb{background:#1B2A4A;border-radius:4px}
+#sidebar-content::-webkit-scrollbar-thumb:hover{background:#C8A96E}
 .cmd-group{margin-bottom:10px}
-.cmd-group-title{color:#e94560;font-size:10px;font-weight:bold;text-transform:uppercase;margin-bottom:4px;border-bottom:1px solid #222;padding-bottom:2px}
+.cmd-group-title{color:#C8A96E;font-size:10px;font-weight:bold;text-transform:uppercase;margin-bottom:4px;border-bottom:1px solid rgba(200,169,110,0.2);padding-bottom:2px}
 .cmd-item{padding:3px 5px;margin-bottom:2px;border-radius:3px;cursor:pointer;border:1px solid transparent}
-.cmd-item:hover{background:#1a1a2e;border-color:#0f3460}
-.cmd-text{color:#7ec8e3;font-size:10px;display:block}
-.cmd-desc{color:#555;font-size:9px;display:block}
+.cmd-item:hover{background:#1B2A4A;border-color:#C8A96E}
+.cmd-text{color:#dfc288;font-size:10px;display:block}
+.cmd-desc{color:#888;font-size:9px;display:block}
 /* TASK LIST in sidebar */
 .tl-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:4px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;transition:all 0.15s}
-.tl-item:hover{background:#1a1a2e;border-color:#0f3460}
-.tl-item.active-task{background:#0f1a2e;border-color:#7ec8e3}
+.tl-item:hover{background:#1B2A4A;border-color:rgba(200,169,110,0.4)}
+.tl-item.active-task{background:#1B2A4A;border-color:#C8A96E;box-shadow:0 0 10px rgba(200,169,110,0.25)}
 .tl-num{width:24px;height:24px;border-radius:50%;background:#16213e;color:#7ec8e3;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .tl-num.done{background:#00d4aa;color:#000}
 .tl-num.skip{background:#333;color:#555}
@@ -156,6 +158,13 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
 .tp-cmd{color:#7ec8e3;font-size:10px;display:block;font-family:"Courier New",monospace}
 .tp-desc{color:#444;font-size:9px;display:block}
 </style>
+
+  <!-- Antigravity Baseline Integration -->
+  <script src="mcp-baseline.js"></script>
+
+  <!-- Antigravity Baseline Integration -->
+  <link rel="stylesheet" href="aws-enterprise-baseline.css">
+  <script src="aws-enterprise-baseline.js"></script>
 </head>
 <body>
 <div id="topbar">
