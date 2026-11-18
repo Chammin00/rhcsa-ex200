@@ -34,7 +34,7 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
 .cmd-text{color:#dfc288;font-size:10px;display:block}
 .cmd-desc{color:#888;font-size:9px;display:block}
 /* TASK LIST in sidebar */
-.tl-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:4px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;transition:all 0.15s}
+.tl-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:4px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;transition:background-color 0.15s,border-color 0.15s}
 .tl-item:hover{background:#1B2A4A;border-color:rgba(200,169,110,0.4)}
 .tl-item.active-task{background:#1B2A4A;border-color:#C8A96E;box-shadow:0 0 10px rgba(200,169,110,0.25)}
 .tl-num{width:24px;height:24px;border-radius:50%;background:#16213e;color:#7ec8e3;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -73,7 +73,7 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
 .c-dim{color:#555}.c-sep{color:#2a2a2a}.c-hi{color:#ff9f43}
 #input-row{display:flex;align-items:center;background:#111;border-top:1px solid #222;padding:6px 14px;flex-shrink:0;gap:7px}
 #prompt-lbl{color:#00d4aa;white-space:nowrap;font-size:13px}
-#cmd-input{flex:1;background:transparent;border:none;outline:none;color:#7ec8e3;font-family:'Courier New',monospace;font-size:13px;caret-color:#00d4aa}
+#cmd-input{flex:1;background:transparent;border:none;outline: 2px solid transparent; outline-offset: 2px;color:#7ec8e3;font-family:'Courier New',monospace;font-size:13px;caret-color:#00d4aa}
 #clear-btn{background:#1a1a2e;border:1px solid #222;color:#555;padding:2px 7px;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit}
 /* PRACTICE EXAM */
 #pex-header{background:#1a1a2e;border-bottom:2px solid #e94560;padding:8px 16px;flex-shrink:0;display:flex;align-items:center;gap:16px}
@@ -165,6 +165,7 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
   <!-- Antigravity Baseline Integration -->
   <link rel="stylesheet" href="aws-enterprise-baseline.css">
   <script src="aws-enterprise-baseline.js"></script>
+<style>:where(button[data-btn-reset]){font:inherit;color:inherit;background:transparent;border:none;padding:0;margin:0;text-align:inherit;}</style>
 </head>
 <body>
 <div id="topbar">
@@ -181,11 +182,11 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
   <!-- SIDEBAR -->
   <div id="sidebar">
     <div id="sidebar-tabs">
-      <div class="stab active" onclick="showTab('cheat')" id="stab-cheat">Cheat</div>
-      <div class="stab" onclick="showTab('drills')" id="stab-drills">Drills</div>
-      <div class="stab" onclick="showTab('practice')" id="stab-practice">Practice</div>
-      <div class="stab" onclick="showTab('exam')" id="stab-exam">Tracker</div>
-      <div class="stab" onclick="showTab('tools')" id="stab-tools">Tools</div>
+      <button type="button" class="stab active" onclick="showTab('cheat')" id="stab-cheat" data-btn-reset>Cheat</button>
+      <button type="button" class="stab" onclick="showTab('drills')" id="stab-drills" data-btn-reset>Drills</button>
+      <button type="button" class="stab" onclick="showTab('practice')" id="stab-practice" data-btn-reset>Practice</button>
+      <button type="button" class="stab" onclick="showTab('exam')" id="stab-exam" data-btn-reset>Tracker</button>
+      <button type="button" class="stab" onclick="showTab('tools')" id="stab-tools" data-btn-reset>Tools</button>
     </div>
     <div id="sidebar-content"></div>
   </div>
@@ -199,7 +200,7 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
     </div>
     <div id="drill-panel">
       <div id="drill-task">Click <strong>Drill Mode</strong> to start</div>
-      <div id="drill-hint" onclick="showHint()">Show hint</div>
+      <button type="button" id="drill-hint" onclick="showHint()" data-btn-reset>Show hint</button>
       <div id="drill-feedback"></div>
       <div id="drill-controls">
         <button class="drill-btn" onclick="nextDrill()">Next</button>
@@ -207,7 +208,7 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
         <button class="drill-btn" onclick="shuffleDrills()">Shuffle</button>
       </div>
     </div>
-    <div id="output" onclick="focusInput()"></div>
+    <button type="button" id="output" onclick="focusInput()" data-btn-reset></button>
     <div id="input-row">
       <span id="prompt-lbl">[root@server1 ~]# </span>
       <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" placeholder="type command...">
@@ -255,10 +256,10 @@ body{background:transparent;color:#f0f0f0;font-family:'Courier New',monospace;fo
         <span>user:<strong style="color:#00d4aa">root</strong></span>
         <span style="margin-left:auto;color:#333">Type commands here to practice this task</span>
       </div>
-      <div id="pex-output" onclick="focusPexInput()" style="flex:1;overflow-y:scroll;padding:10px 14px;background:#0d0d0d;line-height:1.55;scrollbar-width:thin;scrollbar-color:#0f3460 #1a1a1a"></div>
+      <button type="button" id="pex-output" onclick="focusPexInput()" style="flex:1;overflow-y:scroll;padding:10px 14px;background:#0d0d0d;line-height:1.55;scrollbar-width:thin;scrollbar-color:#0f3460 #1a1a1a" data-btn-reset></button>
       <div id="input-row" style="border-top:1px solid #333;padding:6px 14px;background:#0a0a0a;display:flex;gap:7px;align-items:center;flex-shrink:0">
         <span style="color:#00d4aa;white-space:nowrap;font-size:13px">[root@server1 ~]# </span>
-        <input id="pex-input" type="text" autocomplete="off" spellcheck="false" placeholder="type command for this task..." style="flex:1;background:transparent;border:none;outline:none;color:#7ec8e3;font-family:'Courier New',monospace;font-size:13px;caret-color:#00d4aa">
+        <input id="pex-input" type="text" autocomplete="off" spellcheck="false" placeholder="type command for this task..." style="flex:1;background:transparent;border:none;outline: 2px solid transparent; outline-offset: 2px;color:#7ec8e3;font-family:'Courier New',monospace;font-size:13px;caret-color:#00d4aa">
         <button onclick="pexClearOutput()" style="background:#1a1a2e;border:1px solid #222;color:#555;padding:2px 7px;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit">clear</button>
       </div>
     </div>
@@ -889,13 +890,13 @@ function mtRenderBody(){
     var nd=st==='done'?'&#10003;':st==='skip'?'&ndash;':t.num;
     var nc='mt-num'+(st==='done'?' dn':st==='skip'?' sk':'');
     card.innerHTML=
-      '<div class="mt-hdr" onclick="mtToggle('+t.num+')">'+
+      '<button type="button" class="mt-hdr" onclick="mtToggle('+t.num+')" data-btn-reset>'+
         '<div class="'+nc+'">'+nd+'</div>'+
         '<div class="mt-ti"><div class="mt-ti-title">T'+t.num+' &ndash; '+xe(t.title)+'</div>'+
         '<div class="mt-ti-sub">['+xe(t.cat)+'] &bull; '+t.time+'</div></div>'+
         '<div class="mt-pts">'+t.pts+'pt</div>'+
         '<div class="mt-arr" id="mta-'+t.num+'">&#9654;</div>'+
-      '</div>'+
+      '</button>'+
       '<div class="mt-body" id="mtb-'+t.num+'">'+
         '<div class="mt-desc">'+xe(t.desc)+'</div>'+
         '<div class="mt-acts">'+
@@ -1806,16 +1807,16 @@ function renderToolsSidebar(mode){
       var tid='tool-'+tool.name.replace(/[^a-z0-9]/gi,'');
       var wrap=document.createElement('div');
       wrap.innerHTML=
-        '<div class="tool-item" onclick="toggleTool(\''+tid+'\')">' +
+        '<button type="button" class="tool-item" onclick="toggleTool(\''+tid+'\')" data-btn-reset>' +
           '<span class="tool-name">'+xe(tool.name)+'</span>' +
           ' <span style="color:#555;font-size:9px">- '+xe(tool.desc)+'</span>' +
-        '</div>' +
+        '</button>' +
         '<div class="tool-detail" id="'+tid+'">' +
           tool.patterns.map(function(p){
-            return '<div class="tool-pattern" onclick="pasteTool(\''+xe(p.cmd.replace(/'/g,"\\x27")).replace(/\\/g,'\\\\')+'\')">' +
+            return '<button type="button" class="tool-pattern" onclick="pasteTool(\''+xe(p.cmd.replace(/'/g,"\\x27")).replace(/\\/g,'\\\\')+'\')" data-btn-reset>' +
               '<span class="tp-cmd">$ '+xe(p.cmd)+'</span>' +
               '<span class="tp-desc">'+xe(p.d)+'</span>' +
-            '</div>';
+            '</button>';
           }).join('') +
         '</div>';
       catDiv.appendChild(wrap);
